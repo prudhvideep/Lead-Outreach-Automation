@@ -57,7 +57,7 @@ function CustomNode({ data, selected }) {
           <div className="">{label}</div>
         </div>
         <div className={`px-3 py-2 space-x-1 break-words`}>
-          <div className="text-xs font-normal text-slate-400 bg-inherit">
+          <div className="text-xs font-normal text-slate-500 bg-inherit">
             {data.info || "Click to Edit ..."}
             <div className="mt-2 p-1 space-y-1">
               {Object.keys(data.variables).length > 0 && (
