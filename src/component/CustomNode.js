@@ -22,7 +22,7 @@ function CustomNode({ data, selected }) {
       label: "WhatsApp",
       bgColor: "bg-green-300",
     },
-    voiceCall: {
+    botCall: {
       icon: <FaRobot />,
       label: "Bot Call",
       bgColor: "bg-purple-300",

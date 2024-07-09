@@ -1,6 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-"use client";
-
 import React, {
   useState,
   useEffect,
@@ -13,7 +10,7 @@ import ReactFlow, {
   addEdge,
   useNodesState,
   useEdgesState,
-  // Panel,
+  Panel,
   useReactFlow,
   MiniMap,
   Controls,
@@ -26,7 +23,7 @@ import Sidebar from "./component/sidebar";
 import CustomNode from "./component/CustomNode.js";
 
 // Key for local storage
-const flowKey = "flow-key";
+//const flowKey = "flow-key";
 
 // Initial node setup
 const initialNodes = [];
@@ -57,6 +54,11 @@ const App = () => {
   const [nodeName, setNodeName] = useState("");
   const [nodeInfo, setNodeInfo] = useState("");
   const [nodeVariables, setNodeVariables] = useState({});
+  const [processDefinitionKey, setProcessDefinitionKey] = useState(null);
+  const [processInstanceId, setProcessInstanceId] = useState(null);
+  const [deploying, setDeploying] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [completedTasks, setCompletedTasks] = useState([]);
 
   // Update nodes data when nodeName or selectedElements changes
   useEffect(() => {
@@ -80,6 +82,47 @@ const App = () => {
       setNodeVariables({});
     }
   }, [nodeName, nodeInfo, selectedElements, setNodes]);
+
+  // Fetch completed tasks when "Refresh Status" button is clicked
+  const fetchCompletedTasks = async () => {
+    if (!processInstanceId) return;
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_FLOWABLE_BASE_URL}/monitorProcess/${processInstanceId}/completedTasks`
+      );
+      const completedTasks = await response.json();
+      setCompletedTasks(completedTasks);
+    } catch (error) {
+      console.error("Error fetching completed tasks: ", error);
+    }
+  };
+
+  // Highlight completed nodes
+  useEffect(() => {
+    if (completedTasks.length > 0) {
+      setNodes((nds) =>
+        nds.map((node) => {
+          const isCompleted = completedTasks.some(
+            (task) => task.taskKey === node.id
+          );
+          return {
+            ...node,
+            data: {
+              ...node.data,
+              completed: isCompleted,
+            },
+            style: {
+              ...node.style,
+              boxShadow: isCompleted
+                ? "0 4px 8px rgba(0, 128, 0, 0.6)"
+                : "",
+              backgroundColor: isCompleted ? "#d4f4dd" : "",
+            },
+          };
+        })
+      );
+    }
+  }, [completedTasks, setNodes]);
 
   // Handle node click
   const onNodeClick = useCallback((event, node) => {
@@ -121,24 +164,276 @@ const App = () => {
     return unconnectedNodes.length > 0;
   }, [nodes, edges]);
 
+  const generateProcessDefinitionKey = () => {
+    const randomPart = Math.random().toString(36).substr(2, 8);
+    const pid = `process-${randomPart}`;
+
+    return pid;
+  };
+
+  const convertToBPMN = (nodes, edges) => {
+    // Ensure nodes and edges are defined and not empty
+    if (nodes.length === 0 || edges.length === 0) {
+      console.error("Nodes or edges are undefined or empty");
+      return;
+    }
+
+    let pdKey = generateProcessDefinitionKey();
+
+    let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
+  <definitions
+   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:activiti="http://activiti.org/bpmn"
+   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+   typeLanguage="http://www.w3.org/2001/XMLSchema"
+   expressionLanguage="http://www.w3.org/1999/XPath"
+   targetNamespace="http://www.flowable.org/processdef">
+    <process id="${pdKey}" name="${pdKey}" isExecutable="true">
+      <startEvent id="start" name="Start"/>`;
+
+    // Sort nodes based on their connections to ensure sequential order
+    const sortedNodes = sortNodesSequentially(nodes, edges);
+
+    if (sortedNodes.length === 0) {
+      console.error("Sorted nodes are empty");
+      return;
+    }
+
+    // Create nodes and sequence flows
+    sortedNodes.forEach((node, index) => {
+      const nodeType = getNodeType(node.data.nodeType);
+      const nodeMethod = getNodeMethod(node.data.nodeType);
+      const prevNode = index === 0 ? "start" : sortedNodes[index - 1].id;
+      const nextNode = sortedNodes[index + 1]
+        ? sortedNodes[index + 1].id
+        : "end";
+
+      bpmnXml += `
+      <sequenceFlow id="flow${index + 1}" sourceRef="${prevNode}" targetRef="${
+        node.id
+      }"/>
+      <${nodeType} id="${node.id}" name="${
+        node.data.label
+      }" activiti:class="${nodeMethod}">
+        <incoming>flow${index + 1}</incoming>
+        <outgoing>flow${index + 2}</outgoing>
+      </${nodeType}>`;
+    });
+
+    // Add end event
+    bpmnXml += `
+      <sequenceFlow id="flow${sortedNodes.length + 1}" sourceRef="${
+      sortedNodes[sortedNodes.length - 1].id
+    }" targetRef="end"/>
+      <endEvent id="end" name="End">
+        <incoming>flow${sortedNodes.length + 1}</incoming>
+      </endEvent>
+    </process>
+  </definitions>`;
+
+    return bpmnXml;
+  };
+
+  const getNodeMethod = (nodeType) => {
+    switch (nodeType) {
+      case "sms":
+        return "com.flowable.services.SMSServiceTask";
+      case "botCall":
+        return "com.flowable.services.BotCallServiceTask";
+      case "whatsapp":
+        return "com.flowable.services.WhatsAppSendTask";
+      case "email":
+        return "com.flowable.services.EmailServiceTask";
+      default:
+        return "";
+    }
+  };
+
+  const getNodeType = (nodeType) => {
+    switch (nodeType) {
+      case "sms":
+        return "serviceTask";
+      case "email":
+        return "serviceTask";
+      case "botCall":
+        return "serviceTask";
+      case "whatsapp":
+        return "serviceTask";
+      default:
+        return "userTask";
+    }
+  };
+
+  const sortNodesSequentially = (nodes, edges) => {
+    const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+    const edgeMap = new Map();
+    edges.forEach((edge) => {
+      if (!edgeMap.has(edge.source)) {
+        edgeMap.set(edge.source, []);
+      }
+      edgeMap.get(edge.source).push(edge.target);
+    });
+
+    const sorted = [];
+    const visited = new Set();
+
+    const dfs = (nodeId) => {
+      if (visited.has(nodeId)) return;
+      visited.add(nodeId);
+      const targets = edgeMap.get(nodeId) || [];
+      targets.forEach((targetId) => dfs(targetId));
+      sorted.unshift(nodeMap.get(nodeId));
+    };
+
+    // Find the start node (node with no incoming edges)
+    const startNode = nodes.find(
+      (node) => !edges.some((edge) => edge.target === node.id)
+    );
+    if (startNode) {
+      dfs(startNode.id);
+    }
+
+    // Handle any disconnected nodes
+    nodes.forEach((node) => {
+      if (!visited.has(node.id)) {
+        sorted.push(node);
+      }
+    });
+
+    console.log("Sorted nodes: ", sorted);
+    return sorted;
+  };
+
+  const downloadXml = (bpmnXml) => {
+    const blob = new Blob([bpmnXml], { type: "application/xml" });
+    const link = document.createElement("a");
+    link.download = "flow.bpmn";
+    link.href = URL.createObjectURL(blob);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Save flow to local storage
-  // const onSave = useCallback(() => {
-  //   if (reactFlowInstance) {
-  //     const emptyTargetHandles = checkEmptyTargetHandles();
+  const onSave = useCallback(async () => {
+    if (reactFlowInstance) {
+      const emptyTargetHandles = checkEmptyTargetHandles();
+      console.log("Empty Target Handles ---->", emptyTargetHandles);
 
-  //     if (nodes.length > 1 && (emptyTargetHandles > 1 || isNodeUnconnected())) {
-  //       alert(
-  //         "Error: More than one node has an empty target handle or there are unconnected nodes."
-  //       );
-  //     } else {
-  //       const flow = reactFlowInstance.toObject();
-  //       localStorage.setItem(flowKey, JSON.stringify(flow));
-  //       alert("Save successful!"); // Provide feedback when save is successful
-  //     }
-  //   }
-  // }, [reactFlowInstance, nodes, isNodeUnconnected]);
+      if (nodes.length === 0 || edges.length === 0) {
+        alert("Error: Not a valid flow");
+        return;
+      }
 
-  // Restore flow from local storage
+      if (nodes.length > 1 && (emptyTargetHandles > 1 || isNodeUnconnected())) {
+        alert(
+          "Error: More than one node has an empty target handle or there are unconnected nodes."
+        );
+        return;
+      } else {
+        const bpmnXml = convertToBPMN(nodes, edges);
+
+        if (!bpmnXml) {
+          console.error("BPMN XML generation failed");
+          return;
+        }
+
+        // Deploy xml to flowable
+        try {
+          setDeploying(true);
+          const response = await fetch(
+            `${process.env.REACT_APP_FLOWABLE_BASE_URL}/deployProcess`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/xml",
+              },
+              body: bpmnXml,
+            }
+          );
+
+          if (!response.ok) {
+            console.log(`Error! status: ${response.status}`);
+          }
+
+          const responseObj = await response.json();
+
+          if (!responseObj?.processDefinitionKey) {
+            alert("Error: Process Deployment Failed!!!");
+            return;
+          }
+
+          console.log(
+            "Process Definition Key ----> ",
+            responseObj.processDefinitionKey
+          );
+
+          alert(`Process Deployed - deployment key : ${responseObj.processDefinitionKey}`)
+
+          setProcessDefinitionKey(responseObj.processDefinitionKey);
+          setDeploying(false);
+        } catch (error) {
+          console.error("Error during deployment ----> ", error);
+          alert("Error: Process Deployment Failed!!!");
+        }
+
+        downloadXml(bpmnXml);
+      }
+    }
+  }, [reactFlowInstance, nodes, isNodeUnconnected]);
+
+  const startProcess = async () => {
+    console.log("Process Definition Key ----> ", processDefinitionKey);
+
+    if (processDefinitionKey) {
+      setStarting(true);
+      try {
+        const response = await fetch(
+          `${process.env.REACT_APP_FLOWABLE_BASE_URL}/startProcess`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/xml",
+            },
+            body: JSON.stringify({ processKey: processDefinitionKey }),
+          }
+        );
+
+        if (!response.ok) {
+          alert("Error Starting the Process");
+        }
+
+        const responseObj = await response.json();
+
+        console.log("Response ----> ", responseObj);
+
+        if (!responseObj?.processInstanceId) {
+          alert("Process Instance not found. Restart!!!");
+        }
+
+        console.log(
+          "Process instance Id ----> ",
+          responseObj.processInstanceId
+        );
+
+        alert(`Process started - instance id : ${responseObj.processInstanceId}`);
+
+        setProcessInstanceId(responseObj.processInstanceId);
+        setStarting(false);
+      } catch (error) {
+        setStarting(false);
+        console.log(`Error! status: ${error}`);
+      }
+    } else {
+      alert("Process deployment key is null. Redeploy!!!");
+    }
+  };
+
+  //Restore flow from local storage
   // const onRestore = useCallback(() => {
   //   const restoreFlow = async () => {
   //     const flow = JSON.parse(localStorage.getItem(flowKey));
@@ -175,7 +470,10 @@ const App = () => {
       event.preventDefault();
 
       const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
-      const type = event.dataTransfer.getData("application/reactflow");
+      const nodeObjStr = event.dataTransfer.getData("application/reactflow");
+      const nodeObj = JSON.parse(nodeObjStr);
+      const type = nodeObj.type;
+      const nodeActionType = nodeObj.nodeActionType;
 
       if (typeof type === "undefined" || !type) {
         return;
@@ -189,6 +487,7 @@ const App = () => {
       const newNode = {
         id: getId(),
         type: "message",
+        nodeActionType: `${nodeActionType}`,
         position,
         data: {
           label: `${type}`,
@@ -224,33 +523,55 @@ const App = () => {
           style={rfStyle}
           onNodeClick={onNodeClick}
           onPaneClick={() => {
-            setSelectedElements([]); // Reset selected elements when clicking on pane
+            setSelectedElements([]);
             setNodes((nodes) =>
               nodes.map((n) => ({
                 ...n,
-                selected: false, // Reset selected state of nodes when clicking on pane
+                selected: false,
               }))
             );
           }}
           fitView
+          proOptions={{ hideAttribution: true }}
         >
           <Background variant="dots" gap={12} size={1} />
           <Controls />
           <MiniMap zoomable pannable />
-          {/* <Panel>
+          <Panel>
             <button
-              className=" m-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+              className={` m-2 ${
+                deploying
+                  ? "bg-indigo-300 pointer-events-none"
+                  : "bg-indigo-500 hover:bg-indigo-700"
+              } text-white font-bold py-2 px-4 rounded-md`}
               onClick={onSave}
+              disabled={deploying}
             >
-              save flow
+              {deploying ? "Deploying..." : "Deploy XML"}
             </button>
             <button
+              className={` m-2  ${
+                starting
+                  ? "bg-indigo-300 pointer-events-none"
+                  : "bg-indigo-500 hover:bg-indigo-700"
+              } text-white font-bold py-2 px-4 rounded-md`}
+              onClick={startProcess}
+            >
+              {starting ? "Starting..." : "Start Process"}
+            </button>
+            <button
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md m-2"
+              onClick={fetchCompletedTasks}
+            >
+              Refresh Status
+            </button>
+            {/* <button
               className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
               onClick={onRestore}
             >
               restore flow
-            </button>
-          </Panel> */}
+            </button> */}
+          </Panel>
         </ReactFlow>
       </div>
 

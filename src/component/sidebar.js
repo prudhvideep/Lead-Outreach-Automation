@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FaWhatsapp,
   FaEnvelope,
@@ -12,11 +12,12 @@ import {
 } from "react-icons/fa";
 import { HiVariable } from "react-icons/hi2";
 import { TbMathFunction } from "react-icons/tb";
+import { FiSidebar } from "react-icons/fi";
 
 const icons = {
   sms: <FaCommentDots />,
   whatsapp: <FaWhatsapp />,
-  voiceCall: <FaRobot />,
+  botCall: <FaRobot />,
   email: <FaEnvelope />,
 };
 
@@ -44,8 +45,7 @@ export default function Sidebar({
   const [newVariable, setNewVariable] = useState({ name: "", value: "" });
   const [addVariable, setAddVariable] = useState(false);
   const [textareaHeights, setTextareaHeights] = useState({});
-  
-  
+  const [sidebarExpand, setSidebarExpand] = useState(true); 
 
   const handleInfoChange = (event) => {
     setNodeInfo(event.target.value);
@@ -54,14 +54,14 @@ export default function Sidebar({
   const adjustTextareaHeight = (event, nodeId) => {
     const textarea = event.target;
     const maxHeight = 150;
-  
-    textarea.style.height = "auto"; 
-    const newHeight = Math.min(textarea.scrollHeight, maxHeight); 
+
+    textarea.style.height = "auto";
+    const newHeight = Math.min(textarea.scrollHeight, maxHeight);
     textarea.style.height = `${newHeight}px`;
-  
-    setTextareaHeights(prevHeights => ({
+
+    setTextareaHeights((prevHeights) => ({
       ...prevHeights,
-      [nodeId]: newHeight
+      [nodeId]: newHeight,
     }));
   };
 
@@ -69,7 +69,7 @@ export default function Sidebar({
     if (selectedNode) {
       const savedHeight = textareaHeights[selectedNode.id];
       if (savedHeight) {
-        const textarea = document.querySelector('textarea');
+        const textarea = document.querySelector("textarea");
         if (textarea) {
           textarea.style.height = `${savedHeight}px`;
         }
@@ -77,8 +77,12 @@ export default function Sidebar({
     }
   }, [selectedNode, textareaHeights]);
 
-  const onDragStart = (event, nodeType) => {
-    event.dataTransfer.setData("application/reactflow", nodeType);
+  const onDragStart = (event, type, nodeActionType) => {
+    const nodeObj = {
+      type : type,
+      nodeActionType : nodeActionType
+    }
+    event.dataTransfer.setData("application/reactflow", JSON.stringify(nodeObj));
     event.dataTransfer.effectAllowed = "move";
     setDragging(true);
   };
@@ -130,10 +134,7 @@ export default function Sidebar({
   };
 
   const handleDelete = (nodeId) => {
-    //console.log("Node to be deleted ---->",nodeId);
     const updatedNodes = nodes.filter((node) => node?.id !== nodeId);
-    //console.log("Original nodes list ---->", nodes);
-    //console.log("Updated nodes list --->",updatedNodes);
     setNodes(updatedNodes);
     setSelectedElements([]);
   };
@@ -141,7 +142,6 @@ export default function Sidebar({
   const handleCancel = (event) => {
     setAddVariable(false);
     setNewVariable({ name: "", value: "" });
-    //setSelectedElements([]);
   };
 
   const handleVariableNameChange = (event) => {
@@ -159,20 +159,22 @@ export default function Sidebar({
   };
 
   const autoNodeTypes = [
-    { type: "sms", label: "SMS", color: "indigo", shade: "400" },
-    { type: "whatsapp", label: "WhatsApp", color: "green", shade: "500" },
-    { type: "voiceCall", label: "Bot Call", color: "purple", shade: "500" },
-    { type: "email", label: "Email", color: "orange", shade: "500" },
+    { type: "sms", label: "SMS", nodeActionType: "automatic", color: "indigo", shade: "400" },
+    { type: "whatsapp", label: "WhatsApp", nodeActionType: "automatic", color: "green", shade: "500" },
+    { type: "botCall", label: "Bot Call", nodeActionType: "automatic", color: "purple", shade: "500" },
+    { type: "email", label: "Email", nodeActionType: "automatic", color: "orange", shade: "500" },
   ];
 
   const manualNodeTypes = [
-    { type: "fieldAgent", label: "Field Agent", color: "red", shade: "500" },
-    { type: "teleCall", label: "Tele Call", color: "stone", shade: "500" },
+    { type: "fieldAgent", label: "Field Agent", nodeActionType: "manual", color: "red", shade: "500" },
+    { type: "teleCall", label: "Tele Call", nodeActionType: "manual", color: "stone", shade: "500" },
   ];
 
   return (
-    <aside className="border-r-2 border-gray-400 p-4 text-sm bg-gradient-to-b from-gray-50 to-white w-64 h-screen text-gray-800 shadow-lg overflow-y-auto">
-      {selectedNode ? (
+    <aside className={`transition-all duration-300 ease-in-out border-r-2 border-gray-400 p-4 text-sm bg-gradient-to-b from-gray-50 to-white h-screen text-gray-800 shadow-lg overflow-y-auto ${
+      sidebarExpand ? "w-64" : "w-14"
+    }`}>
+      {(sidebarExpand && selectedNode) ? (
         // settings panel
         <div>
           <h3 className="text-xl mb-4 text-gray-800 font-semibold">
@@ -189,13 +191,11 @@ export default function Sidebar({
                 adjustTextareaHeight(event, selectedNode.id);
               }}
               placeholder="// Add data"
-              style={{ height: textareaHeights[selectedNode.id] || 'auto' }}
+              style={{ height: textareaHeights[selectedNode.id] || "auto" }}
             />
           </div>
           <div className="mt-6 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400">
-            <p className="font-medium w-auto h-auto text-gray-800">
-              Variables
-            </p>
+            <p className="font-medium w-auto h-auto text-gray-800">Variables</p>
             {Object.keys(nodeVariables).length > 0 && (
               <>
                 <div className="space-y-2 bg-inherit rounded-lg w-full">
@@ -307,8 +307,16 @@ export default function Sidebar({
       ) : (
         // node panel
         <>
-          <h3 className="text-xl mb-4 text-gray-800 font-semibold">Actions</h3>
-          <div className="p-5 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 ">
+          <div className={`flex flex-row ${sidebarExpand && "space-x-32"}`}>
+            <h3 className={`text-xl mb-4 ${!sidebarExpand && "hidden"} text-gray-800 font-semibold`}>
+              Actions
+            </h3>
+            < FiSidebar
+              className={`text-xl mt-1.5 text-gray-500 hover:text-gray-900 hover:scale-110 ${!sidebarExpand && "size-32"}`}
+              onClick={() => setSidebarExpand(!sidebarExpand)}
+            />
+          </div>
+          <div className={`p-5 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400  ${!sidebarExpand && "hidden"}`}>
             <p className="font-medium text-slate-500">Automatic</p>
             {autoNodeTypes.map((node) => (
               <div
@@ -320,7 +328,7 @@ export default function Sidebar({
                 }-${node.shade} hover:text-${node.color}-${
                   node.shade
                 } transition-all duration-200 ease-in-out transform hover:scale-105 hover:shadow-md`}
-                onDragStart={(event) => onDragStart(event, node.type)}
+                onDragStart={(event) => onDragStart(event, node.type, node.nodeActionType)}
                 onDragEnd={onDragEnd}
                 draggable
                 onMouseEnter={() => setHoveredNode(node.type)}
@@ -340,7 +348,7 @@ export default function Sidebar({
               </div>
             ))}
           </div>
-          <div className="p-5 mt-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 ">
+          <div className={`p-5 mt-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 ${!sidebarExpand && "hidden"}`}>
             <p className="font-medium text-slate-500">Manual</p>
             {manualNodeTypes.map((node) => (
               <div
@@ -352,7 +360,7 @@ export default function Sidebar({
                 }-${node.shade} hover:text-${node.color}-${
                   node.shade
                 } transition-all duration-200 ease-in-out transform hover:scale-105 hover:shadow-md`}
-                onDragStart={(event) => onDragStart(event, node.type)}
+                onDragStart={(event) => onDragStart(event, node.type, node.nodeActionType)}
                 onDragEnd={onDragEnd}
                 draggable
                 onMouseEnter={() => setHoveredNode(node.type)}
