@@ -68,10 +68,8 @@ function CustomNode({ data, selected }) {
                   <div>
                     <div className="bg-inherit rounded-lg w-full">
                       {Object.entries(data.variables).map(([key, value]) => (
-                        <div className="flex flex-row space-x-1">
-                          <HiVariable
-                            className="mt-auto" 
-                          />
+                        <div key={key} className="flex flex-row space-x-1">
+                          <HiVariable className="mt-auto" />
                           <p className="italic">{key}</p>
                         </div>
                       ))}

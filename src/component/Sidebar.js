@@ -9,10 +9,15 @@ import {
   FaPhoneAlt,
   FaUserTie,
   FaTrashAlt,
+  FaAngleRight,
+  FaChevronDown,
 } from "react-icons/fa";
 import { HiVariable } from "react-icons/hi2";
 import { TbMathFunction } from "react-icons/tb";
 import { FiSidebar } from "react-icons/fi";
+import Circle from "./shapes/circle";
+import Rhombus from "./shapes/rhombus";
+import Square from "./shapes/square";
 
 const icons = {
   sms: <FaCommentDots />,
@@ -45,7 +50,10 @@ export default function Sidebar({
   const [newVariable, setNewVariable] = useState({ name: "", value: "" });
   const [addVariable, setAddVariable] = useState(false);
   const [textareaHeights, setTextareaHeights] = useState({});
-  const [sidebarExpand, setSidebarExpand] = useState(true); 
+  const [sidebarExpand, setSidebarExpand] = useState(true);
+  const [manualNodesExpand, setManualNodesExpand] = useState(false);
+  const [autoNodesExpand, setAutoNodesExpand] = useState(false);
+  const [controlNodesExpand, setControlNodesExpand] = useState(false);
 
   const handleInfoChange = (event) => {
     setNodeInfo(event.target.value);
@@ -79,10 +87,13 @@ export default function Sidebar({
 
   const onDragStart = (event, type, nodeActionType) => {
     const nodeObj = {
-      type : type,
-      nodeActionType : nodeActionType
-    }
-    event.dataTransfer.setData("application/reactflow", JSON.stringify(nodeObj));
+      type: type,
+      nodeActionType: nodeActionType,
+    };
+    event.dataTransfer.setData(
+      "application/reactflow",
+      JSON.stringify(nodeObj)
+    );
     event.dataTransfer.effectAllowed = "move";
     setDragging(true);
   };
@@ -159,22 +170,95 @@ export default function Sidebar({
   };
 
   const autoNodeTypes = [
-    { type: "sms", label: "SMS", nodeActionType: "automatic", color: "indigo", shade: "400" },
-    { type: "whatsapp", label: "WhatsApp", nodeActionType: "automatic", color: "green", shade: "500" },
-    { type: "botCall", label: "Bot Call", nodeActionType: "automatic", color: "purple", shade: "500" },
-    { type: "email", label: "Email", nodeActionType: "automatic", color: "orange", shade: "500" },
+    {
+      type: "sms",
+      label: "SMS",
+      nodeActionType: "automatic",
+      color: "indigo",
+      shade: "400",
+    },
+    {
+      type: "whatsapp",
+      label: "WhatsApp",
+      nodeActionType: "automatic",
+      color: "green",
+      shade: "500",
+    },
+    {
+      type: "botCall",
+      label: "Bot Call",
+      nodeActionType: "automatic",
+      color: "purple",
+      shade: "500",
+    },
+    {
+      type: "email",
+      label: "Email",
+      nodeActionType: "automatic",
+      color: "orange",
+      shade: "500",
+    },
   ];
 
   const manualNodeTypes = [
-    { type: "fieldAgent", label: "Field Agent", nodeActionType: "manual", color: "red", shade: "500" },
-    { type: "teleCall", label: "Tele Call", nodeActionType: "manual", color: "stone", shade: "500" },
+    {
+      type: "fieldAgent",
+      label: "Field Agent",
+      nodeActionType: "manual",
+      color: "red",
+      shade: "500",
+    },
+    {
+      type: "teleCall",
+      label: "Tele Call",
+      nodeActionType: "manual",
+      color: "stone",
+      shade: "500",
+    },
+  ];
+
+  const controlNodesTypes = [
+    {
+      type: "start",
+      label: "Start",
+      nodeActionType: "control",
+      color: "green",
+      shade: "500",
+      shape: "circle",
+    },
+    {
+      type: "end",
+      label: "End",
+      nodeActionType: "control",
+      color: "red",
+      shade: "500",
+      shape: "circle",
+    },
+    {
+      type: "decision",
+      label: "Decision",
+      nodeActionType: "control",
+      color: "yellow",
+      shade: "500",
+      shape: "rhombus",
+    },
+    {
+      type: "wait",
+      label: "Wait",
+      nodeActionType: "control",
+      color: "yellow",
+      shade: "500",
+      shape: "square",
+    },
   ];
 
   return (
-    <aside className={`transition-all duration-300 ease-in-out border-r-2 border-gray-400 p-4 text-sm bg-gradient-to-b from-gray-50 to-white h-screen text-gray-800 shadow-lg overflow-y-auto ${
-      sidebarExpand ? "w-64" : "w-14"
-    }`}>
-      {(sidebarExpand && selectedNode) ? (
+    <aside
+      className={`transition-all duration-300 ease-in-out border-r-2 border-gray-400 p-4 text-sm bg-gradient-to-b from-gray-50 to-white h-screen text-gray-800 shadow-lg overflow-y-auto ${
+        sidebarExpand ? "w-64" : "w-14"
+      }`}
+    >
+      {sidebarExpand && selectedNode ? (
         // settings panel
         <div>
           <h3 className="text-xl mb-4 text-gray-800 font-semibold">
@@ -307,78 +391,185 @@ export default function Sidebar({
       ) : (
         // node panel
         <>
-          <div className={`flex flex-row ${sidebarExpand && "space-x-32"}`}>
-            <h3 className={`text-xl mb-4 ${!sidebarExpand && "hidden"} text-gray-800 font-semibold`}>
-              Actions
-            </h3>
-            < FiSidebar
-              className={`text-xl mt-1.5 text-gray-500 hover:text-gray-900 hover:scale-110 ${!sidebarExpand && "size-32"}`}
+          <div
+            className={`flex flex-row items-center mb-6 ${
+              sidebarExpand && "space-x-4"
+            }`}
+          >
+            <FiSidebar
+              className={`text-2xl text-gray-500 hover:text-gray-900 hover:scale-110 ${
+                !sidebarExpand && "size-32"
+              }`}
               onClick={() => setSidebarExpand(!sidebarExpand)}
             />
+            <h3
+              className={`text-2xl ${
+                !sidebarExpand && "hidden"
+              } text-gray-800 font-semibold`}
+            >
+              Dashboard
+            </h3>
           </div>
-          <div className={`p-5 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400  ${!sidebarExpand && "hidden"}`}>
-            <p className="font-medium text-slate-500">Automatic</p>
-            {autoNodeTypes.map((node) => (
-              <div
-                key={node.type}
-                className={`relative bg-white p-4 border-2 border-gray-200 rounded-lg cursor-${
-                  dragging ? "grabbing" : "grab"
-                } flex items-center space-x-3 text-gray-600 hover:bg-gray-50 hover:border-${
-                  node.color
-                }-${node.shade} hover:text-${node.color}-${
-                  node.shade
-                } transition-all duration-200 ease-in-out transform hover:scale-105 hover:shadow-md`}
-                onDragStart={(event) => onDragStart(event, node.type, node.nodeActionType)}
-                onDragEnd={onDragEnd}
-                draggable
-                onMouseEnter={() => setHoveredNode(node.type)}
-                onMouseLeave={() => setHoveredNode(null)}
-              >
-                <div
-                  className={`text-gray-400 group-hover:text-blue-500 transition-colors duration-200 text-${node.color}-${node.shade}`}
-                >
-                  {icons[node.type]}
-                </div>
-                <span className="font-medium">{node.label}</span>
-                {hoveredNode === node.type && !dragging && (
-                  <div className="absolute top-0 right-2 transform -translate-y-1/2 mt-0 px-2 py-1 bg-gray-600 text-white font-semibold text-xs rounded-md transition-opacity duration-200 ease-in-out group-hover:opacity-100 group-active:opacity-0 group-active:pointer-events-none">
-                    Drag to add
-                  </div>
+          <div
+            className={`p-5 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400  ${
+              !sidebarExpand && "hidden"
+            }`}
+          >
+            <div className="flex flex-row items-center space-x-2">
+              <div>
+                {autoNodesExpand && (
+                  <FaChevronDown
+                    className="text-lg hover:scale-110"
+                    onClick={() => setAutoNodesExpand(false)}
+                  />
+                )}
+                {!autoNodesExpand && (
+                  <FaAngleRight
+                    className="text-lg hover:scale-110"
+                    onClick={() => setAutoNodesExpand(true)}
+                  />
                 )}
               </div>
-            ))}
-          </div>
-          <div className={`p-5 mt-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 ${!sidebarExpand && "hidden"}`}>
-            <p className="font-medium text-slate-500">Manual</p>
-            {manualNodeTypes.map((node) => (
-              <div
-                key={node.type}
-                className={`relative bg-white p-4 border-2 border-gray-200 rounded-lg cursor-${
-                  dragging ? "grabbing" : "grab"
-                } flex items-center space-x-3 text-gray-600 hover:bg-gray-50 hover:border-${
-                  node.color
-                }-${node.shade} hover:text-${node.color}-${
-                  node.shade
-                } transition-all duration-200 ease-in-out transform hover:scale-105 hover:shadow-md`}
-                onDragStart={(event) => onDragStart(event, node.type, node.nodeActionType)}
-                onDragEnd={onDragEnd}
-                draggable
-                onMouseEnter={() => setHoveredNode(node.type)}
-                onMouseLeave={() => setHoveredNode(null)}
-              >
+              <div className="text-lg font-medium text-slate-500">
+                <p>Automatic Tasks</p>
+              </div>
+            </div>
+            {autoNodesExpand &&
+              autoNodeTypes.map((node) => (
                 <div
-                  className={`text-gray-400 group-hover:text-blue-500 transition-colors duration-200 text-${node.color}-${node.shade}`}
+                  key={node.type}
+                  className={`relative bg-white p-4 border-2 border-gray-200 rounded-lg cursor-${
+                    dragging ? "grabbing" : "grab"
+                  } flex items-center space-x-3 text-gray-600 hover:bg-gray-50 hover:border-${
+                    node.color
+                  }-${node.shade} hover:text-${node.color}-${
+                    node.shade
+                  } transition-all duration-200 ease-in-out transform hover:scale-105 hover:shadow-md`}
+                  onDragStart={(event) =>
+                    onDragStart(event, node.type, node.nodeActionType)
+                  }
+                  onDragEnd={onDragEnd}
+                  draggable
+                  onMouseEnter={() => setHoveredNode(node.type)}
+                  onMouseLeave={() => setHoveredNode(null)}
                 >
-                  {manualIcons[node.type]}
-                </div>
-                <span className="font-medium">{node.label}</span>
-                {hoveredNode === node.type && !dragging && (
-                  <div className="absolute top-0 right-2 transform -translate-y-1/2 mt-0 px-2 py-1 bg-gray-600 text-white text-xs rounded-md transition-opacity duration-200 ease-in-out group-hover:opacity-100">
-                    Drag to add
+                  <div
+                    className={`text-gray-400 group-hover:text-blue-500 transition-colors duration-200 text-${node.color}-${node.shade}`}
+                  >
+                    {icons[node.type]}
                   </div>
+                  <span className="font-medium">{node.label}</span>
+                  {hoveredNode === node.type && !dragging && (
+                    <div className="absolute top-0 right-2 transform -translate-y-1/2 mt-0 px-2 py-1 bg-gray-600 text-white font-semibold text-xs rounded-md transition-opacity duration-200 ease-in-out group-hover:opacity-100 group-active:opacity-0 group-active:pointer-events-none">
+                      Drag to add
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+          <div
+            className={`p-5 mt-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 ${
+              !sidebarExpand && "hidden"
+            }`}
+          >
+            <div className="flex flex-row items-center space-x-2">
+              <div>
+                {manualNodesExpand && (
+                  <FaChevronDown
+                    className="text-lg hover:scale-110"
+                    onClick={() => setManualNodesExpand(false)}
+                  />
+                )}
+                {!manualNodesExpand && (
+                  <FaAngleRight
+                    className="text-lg hover:scale-110"
+                    onClick={() => setManualNodesExpand(true)}
+                  />
                 )}
               </div>
-            ))}
+              <div className="font-medium text-lg text-slate-500">
+                <p>Manual Tasks</p>
+              </div>
+            </div>
+            {manualNodesExpand &&
+              manualNodeTypes.map((node) => (
+                <div
+                  key={node.type}
+                  className={`relative bg-white p-4 border-2 border-gray-200 rounded-lg cursor-${
+                    dragging ? "grabbing" : "grab"
+                  } flex items-center space-x-3 text-gray-600 hover:bg-gray-50 hover:border-${
+                    node.color
+                  }-${node.shade} hover:text-${node.color}-${
+                    node.shade
+                  } transition-all duration-200 ease-in-out transform hover:scale-105 hover:shadow-md`}
+                  onDragStart={(event) =>
+                    onDragStart(event, node.type, node.nodeActionType)
+                  }
+                  onDragEnd={onDragEnd}
+                  draggable
+                  onMouseEnter={() => setHoveredNode(node.type)}
+                  onMouseLeave={() => setHoveredNode(null)}
+                >
+                  <div
+                    className={`text-gray-400 group-hover:text-blue-500 transition-colors duration-200 text-${node.color}-${node.shade}`}
+                  >
+                    {manualIcons[node.type]}
+                  </div>
+                  <span className="font-medium">{node.label}</span>
+                  {hoveredNode === node.type && !dragging && (
+                    <div className="absolute top-0 right-2 transform -translate-y-1/2 mt-0 px-2 py-1 bg-gray-600 text-white text-xs rounded-md transition-opacity duration-200 ease-in-out group-hover:opacity-100">
+                      Drag to add
+                    </div>
+                  )}
+                </div>
+              ))}
+          </div>
+          <div
+            className={`p-4 mt-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 ${
+              !sidebarExpand && "hidden"
+            }`}
+          >
+            <div className="flex flex-row items-center space-x-2">
+              <div>
+                {controlNodesExpand && (
+                  <FaChevronDown
+                    className="text-lg hover:scale-110"
+                    onClick={() => setControlNodesExpand(false)}
+                  />
+                )}
+                {!controlNodesExpand && (
+                  <FaAngleRight
+                    className="text-lg hover:scale-110"
+                    onClick={() => setControlNodesExpand(true)}
+                  />
+                )}
+              </div>
+              <div className="font-medium text-lg text-slate-500">
+                <p>Controls</p>
+              </div>
+            </div>
+            <div className="space-y-2 grid grid-rows-2 grid-flow-col gap-4 items-center justify-center">
+              {controlNodesExpand &&
+                controlNodesTypes.map((node) => (
+                  <div
+                    key={node.type}
+                    className={`cursor-${
+                      dragging ? "grabbing" : "grab"
+                    } flex items-center text-center text-gray-600 bg-none`}
+                    onDragStart={(event) =>
+                      onDragStart(event, node.type, node.nodeActionType)
+                    }
+                    onDragEnd={onDragEnd}
+                    draggable
+                    onMouseEnter={() => setHoveredNode(node.type)}
+                    onMouseLeave={() => setHoveredNode(null)}
+                  >
+                    {node.shape === "circle" && <Circle label={node.label} />}
+                    {node.shape === "rhombus" && <Rhombus label={node.label} />}
+                    {node.shape === "square" && <Square label={node.label} />}
+                  </div>
+                ))}
+            </div>
           </div>
         </>
       )}

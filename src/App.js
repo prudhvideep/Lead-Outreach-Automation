@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useRef,
   useCallback,
-  useMemo,
 } from "react";
 import ReactFlow, {
   ReactFlowProvider,
@@ -15,15 +14,33 @@ import ReactFlow, {
   MiniMap,
   Controls,
   Background,
+  MarkerType,
 } from "reactflow";
 import "reactflow/dist/base.css";
 
 //import { v4 as uuidv4 } from 'uuid';
-import Sidebar from "./component/sidebar";
-import CustomNode from "./component/CustomNode.js";
+import Sidebar from "./component/Sidebar.js";
+import CustomNode from "./component/nodes/CustomNode.js";
+import StartNode from "./component/nodes/StartNode.js";
+import EndNode from "./component/nodes/EndNode.js";
+import WaitNode from "./component/nodes/WaitNode.js";
+import ToolBar from "./component/ToolBar.js";
 
 // Key for local storage
 //const flowKey = "flow-key";
+
+// Define nodeTypes outside the component
+const nodeTypes = {
+  email: CustomNode,
+  sms: CustomNode,
+  whatsapp: CustomNode,
+  botCall: CustomNode,
+  fieldAgent: CustomNode,
+  teleCall: CustomNode,
+  start: StartNode,
+  end: EndNode,
+  wait: WaitNode,
+};
 
 // Initial node setup
 const initialNodes = [];
@@ -34,17 +51,6 @@ let id = 0;
 const getId = () => `node_${id++}`;
 
 const App = () => {
-  // Define custom node types
-  const nodeTypes = useMemo(
-    () => ({
-      message: CustomNode,
-      call: CustomNode,
-      whatsapp: CustomNode,
-      voiceCall: CustomNode,
-    }),
-    []
-  );
-
   // States and hooks setup
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
@@ -59,6 +65,10 @@ const App = () => {
   const [deploying, setDeploying] = useState(false);
   const [starting, setStarting] = useState(false);
   const [completedTasks, setCompletedTasks] = useState([]);
+
+  //Constants
+  const EDGE_COLOR = "#b1b1b7";
+  const EDGE_SELECTED_COLOR = "#555";
 
   // Update nodes data when nodeName or selectedElements changes
   useEffect(() => {
@@ -113,9 +123,7 @@ const App = () => {
             },
             style: {
               ...node.style,
-              boxShadow: isCompleted
-                ? "0 4px 8px rgba(0, 128, 0, 0.6)"
-                : "",
+              boxShadow: isCompleted ? "0 4px 8px rgba(0, 128, 0, 0.6)" : "",
               backgroundColor: isCompleted ? "#d4f4dd" : "",
             },
           };
@@ -372,7 +380,9 @@ const App = () => {
             responseObj.processDefinitionKey
           );
 
-          alert(`Process Deployed - deployment key : ${responseObj.processDefinitionKey}`)
+          alert(
+            `Process Deployed - deployment key : ${responseObj.processDefinitionKey}`
+          );
 
           setProcessDefinitionKey(responseObj.processDefinitionKey);
           setDeploying(false);
@@ -420,7 +430,9 @@ const App = () => {
           responseObj.processInstanceId
         );
 
-        alert(`Process started - instance id : ${responseObj.processInstanceId}`);
+        alert(
+          `Process started - instance id : ${responseObj.processInstanceId}`
+        );
 
         setProcessInstanceId(responseObj.processInstanceId);
         setStarting(false);
@@ -433,27 +445,46 @@ const App = () => {
     }
   };
 
-  //Restore flow from local storage
-  // const onRestore = useCallback(() => {
-  //   const restoreFlow = async () => {
-  //     const flow = JSON.parse(localStorage.getItem(flowKey));
-
-  //     if (flow) {
-  //       const { x = 0, y = 0, zoom = 1 } = flow.viewport;
-  //       setNodes(flow.nodes || []);
-  //       setEdges(flow.edges || []);
-  //       setViewport({ x, y, zoom });
-  //     }
-  //   };
-
-  //   restoreFlow();
-  // }, [setNodes, setViewport]);
-
   // Handle edge connection
   const onConnect = useCallback(
     (params) => {
       console.log("Edge created: ", params);
       setEdges((eds) => addEdge(params, eds));
+    },
+    [setEdges]
+  );
+
+  //Edge default option
+  const defaultEdgeOptions = {
+    type: "default",
+    animated: false,
+    style: {
+      stroke: EDGE_COLOR,
+      transition: "stroke 0.3s ease",
+    },
+    markerEnd: {
+      type: MarkerType.ArrowClosed,
+      color: EDGE_COLOR,
+    },
+  };
+
+  //Handle edge click
+  const onEdgeClick = useCallback(
+    (event, edge) => {
+      setEdges((eds) =>
+        eds.map((e) => ({
+          ...e,
+          selected: e.id === edge.id,
+          style: {
+            ...e.style,
+            stroke: e.id === edge.id ? EDGE_SELECTED_COLOR : EDGE_COLOR,
+          },
+          markerEnd: {
+            ...e.markerEnd,
+            color: e.id === edge.id ? EDGE_SELECTED_COLOR : EDGE_COLOR,
+          },
+        }))
+      );
     },
     [setEdges]
   );
@@ -468,8 +499,6 @@ const App = () => {
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
-
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const nodeObjStr = event.dataTransfer.getData("application/reactflow");
       const nodeObj = JSON.parse(nodeObjStr);
       const type = nodeObj.type;
@@ -479,14 +508,14 @@ const App = () => {
         return;
       }
 
-      const position = reactFlowInstance.project({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
+      const position = reactFlowInstance.screenToFlowPosition({
+        x: event.clientX,
+        y: event.clientY,
       });
 
       const newNode = {
         id: getId(),
-        type: "message",
+        type: `${type}`,
         nodeActionType: `${nodeActionType}`,
         position,
         data: {
@@ -514,8 +543,10 @@ const App = () => {
           nodes={nodes}
           nodeTypes={nodeTypes}
           edges={edges}
+          defaultEdgeOptions={defaultEdgeOptions}
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
+          onEdgeClick={onEdgeClick}
           onConnect={onConnect}
           onInit={setReactFlowInstance}
           onDrop={onDrop}
@@ -530,47 +561,36 @@ const App = () => {
                 selected: false,
               }))
             );
+
+            setEdges((eds) =>
+              eds.map((e) => ({
+                ...e,
+                selected: false,
+                style: {
+                  ...e.style,
+                  stroke: EDGE_COLOR,
+                },
+                markerEnd: {
+                  ...e.markerEnd,
+                  color: EDGE_COLOR,
+                },
+              }))
+            );
           }}
           fitView
           proOptions={{ hideAttribution: true }}
+          snapToGrid={true}
+          deleteKeyCode={["Backspace", "Delete"]}
+          selectionKeyCode={["Control", "Meta"]}
         >
           <Background variant="dots" gap={12} size={1} />
           <Controls />
           <MiniMap zoomable pannable />
           <Panel>
-            <button
-              className={` m-2 ${
-                deploying
-                  ? "bg-indigo-300 pointer-events-none"
-                  : "bg-indigo-500 hover:bg-indigo-700"
-              } text-white font-bold py-2 px-4 rounded-md`}
-              onClick={onSave}
-              disabled={deploying}
-            >
-              {deploying ? "Deploying..." : "Deploy XML"}
-            </button>
-            <button
-              className={` m-2  ${
-                starting
-                  ? "bg-indigo-300 pointer-events-none"
-                  : "bg-indigo-500 hover:bg-indigo-700"
-              } text-white font-bold py-2 px-4 rounded-md`}
-              onClick={startProcess}
-            >
-              {starting ? "Starting..." : "Start Process"}
-            </button>
-            <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-md m-2"
-              onClick={fetchCompletedTasks}
-            >
-              Refresh Status
-            </button>
-            {/* <button
-              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-              onClick={onRestore}
-            >
-              restore flow
-            </button> */}
+            <ToolBar
+              nodes={nodes}
+              edges={edges} 
+            />
           </Panel>
         </ReactFlow>
       </div>
