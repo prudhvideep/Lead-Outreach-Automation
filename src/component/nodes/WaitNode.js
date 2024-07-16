@@ -1,15 +1,19 @@
 import React from "react";
 import { Handle, Position } from "reactflow";
+import { FiClock } from 'react-icons/fi';
+
 
 function WaitNode({ data, selected }) {
   return (
     <>
       <div
-        className={`relative shadow-xl flex items-center justify-center bg-white w-16 h-16 text-center border-2 border-gray-200 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 ${
+        className={`relative shadow-xl flex items-center justify-center bg-white w-10 h-10 text-center border border-gray-500 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 ${
           selected ? "border-solid border-2 border-indigo-500" : ""
         }`}
       >
-        <h1 className="text-gray-600 font-medium">Wait</h1>
+        <FiClock 
+          className="text-gray-800 text-2xl"
+        />
       </div>
 
       <Handle

@@ -8,7 +8,6 @@ import {
   FaUserTie,
   FaPhoneAlt,
 } from "react-icons/fa";
-import { HiVariable } from "react-icons/hi2";
 
 function CustomNode({ data, selected }) {
   const nodeTypes = {
@@ -57,27 +56,11 @@ function CustomNode({ data, selected }) {
           <div className="">{label}</div>
         </div>
         <div className={`px-3 py-2 space-x-1 break-words`}>
-          <div className="text-xs font-normal text-slate-500 bg-inherit">
-            {data.info || "Click to Edit ..."}
-            <div className="mt-2 p-1 space-y-1">
-              {Object.keys(data.variables).length > 0 && (
-                <>
-                  <p className="font-medium w-auto h-auto text-slate-500">
-                    Variables
-                  </p>
-                  <div>
-                    <div className="bg-inherit rounded-lg w-full">
-                      {Object.entries(data.variables).map(([key, value]) => (
-                        <div key={key} className="flex flex-row space-x-1">
-                          <HiVariable className="mt-auto" />
-                          <p className="italic">{key}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
+          <div
+            className="text-xs font-normal text-slate-500 bg-inherit"
+            style={{ whiteSpace: "pre-wrap" }}
+          >
+            {data.info || "Click to Edit //"}
           </div>
         </div>
       </div>

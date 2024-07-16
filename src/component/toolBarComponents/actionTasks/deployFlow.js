@@ -1,8 +1,7 @@
 import React, { useCallback } from "react";
 import { GrDeploy } from "react-icons/gr";
 
-const DeployFlow = ({ nodes,edges,collapse,setProcessDefinitionKey }) => {
-
+const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
   // Check for empty target handles
   const checkEmptyTargetHandles = () => {
     let emptyTargetHandles = 0;
@@ -242,8 +241,7 @@ const DeployFlow = ({ nodes,edges,collapse,setProcessDefinitionKey }) => {
 
       downloadXml(bpmnXml);
     }
-  }
-
+  };
 
   return (
     <div
@@ -252,10 +250,7 @@ const DeployFlow = ({ nodes,edges,collapse,setProcessDefinitionKey }) => {
       }`}
       title="Deploy Flow"
     >
-      <GrDeploy 
-      className="text-xl"
-      onClick={handleDeploy} 
-      />
+      <GrDeploy className="text-xl" onClick={handleDeploy} />
     </div>
   );
 };

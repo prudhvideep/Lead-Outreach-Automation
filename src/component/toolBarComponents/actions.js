@@ -9,7 +9,7 @@ const Actions = ( {nodes,edges} ) => {
   const [processDefinitionKey,setProcessDefinitionKey] = useState('');
 
   return (
-    <div className="absolute inset-y-0 left-80 ml-2">
+    <div className="absolute inset-y-0 left-80 ml-5">
       <div className="flex flex-row space-x-4">
         <DeployFlow
           nodes={nodes}

@@ -55,6 +55,7 @@ module.exports = {
     'text-orange-500',
     'text-indigo-400',
     'text-red-500',
-    'txet-stone-500',
+    'text-stone-500',
+    'text-yellow-500',
   ],
 };
