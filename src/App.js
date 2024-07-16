@@ -58,6 +58,7 @@ const App = () => {
   const [nodeInfo, setNodeInfo] = useState("");
   const [nodeInfoVar,setNodeInfoVar] = useState("");
   const [nodeVariables, setNodeVariables] = useState({});
+  const [nodeExpressions, setNodeExpressions] = useState({});
   const [processDefinitionKey, setProcessDefinitionKey] = useState(null);
   const [processInstanceId, setProcessInstanceId] = useState(null);
   const [deploying, setDeploying] = useState(false);
@@ -81,6 +82,7 @@ const App = () => {
               info: nodeInfo,
               infoVar: nodeInfoVar,
               variables: nodeVariables,
+              expressions: nodeExpressions,
             };
           }
           return node;
@@ -91,6 +93,7 @@ const App = () => {
       setNodeInfo("");
       setNodeInfoVar("");
       setNodeVariables({});
+      setNodeExpressions({});
     }
   }, [nodeName, nodeInfo, nodeInfoVar, selectedElements, setNodes]);
 
@@ -140,6 +143,7 @@ const App = () => {
     setNodeInfo(node.data.info);
     setNodeInfoVar(node.data.infoVar);
     setNodeVariables(node.data.variables);
+    setNodeExpressions(node.data.expressions);
     setNodes((nodes) =>
       nodes.map((n) => ({
         ...n,
@@ -286,6 +290,7 @@ const App = () => {
           info: "",
           infoVar: "",
           variables: {},
+          expressions: {},
         },
       };
 
@@ -371,6 +376,8 @@ const App = () => {
         setNodeInfoVar={setNodeInfoVar}
         nodeVariables={nodeVariables}
         setNodeVariables={setNodeVariables}
+        nodeExpressions={nodeExpressions}
+        setNodeExpressions={setNodeExpressions}
         selectedNode={selectedElements[0]}
         setSelectedElements={setSelectedElements}
       />

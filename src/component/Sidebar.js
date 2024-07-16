@@ -18,6 +18,8 @@ export default function Sidebar({
   setNodeInfoVar,
   nodeVariables,
   setNodeVariables,
+  nodeExpressions,
+  setNodeExpressions,
   selectedNode,
   setSelectedElements,
 }) {
@@ -73,6 +75,8 @@ export default function Sidebar({
           setNodeInfoVar={setNodeInfoVar}
           nodeVariables={nodeVariables}
           setNodeVariables={setNodeVariables}
+          nodeExpressions={nodeExpressions}
+          setNodeExpressions={setNodeExpressions}
           setNodes={setNodes}
           setSelectedElements={setSelectedElements}
           handleDelete={handleDelete}
