@@ -2,7 +2,6 @@ import React, { useCallback } from "react";
 import { GrDeploy } from "react-icons/gr";
 
 const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
-  // Check for empty target handles
   const checkEmptyTargetHandles = () => {
     let emptyTargetHandles = 0;
     edges.forEach((edge) => {
@@ -15,60 +14,17 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
 
   const generateProcessDefinitionKey = () => {
     const randomPart = Math.random().toString(36).substr(2, 8);
-    const pid = `process-${randomPart}`;
-
-    return pid;
-  };
-
-  const sortNodesSequentially = (nodes, edges) => {
-    const nodeMap = new Map(nodes.map((node) => [node.id, node]));
-    const edgeMap = new Map();
-    edges.forEach((edge) => {
-      if (!edgeMap.has(edge.source)) {
-        edgeMap.set(edge.source, []);
-      }
-      edgeMap.get(edge.source).push(edge.target);
-    });
-
-    const sorted = [];
-    const visited = new Set();
-
-    const dfs = (nodeId) => {
-      if (visited.has(nodeId)) return;
-      visited.add(nodeId);
-      const targets = edgeMap.get(nodeId) || [];
-      targets.forEach((targetId) => dfs(targetId));
-      sorted.unshift(nodeMap.get(nodeId));
-    };
-
-    // Find the start node (node with no incoming edges)
-    const startNode = nodes.find(
-      (node) => !edges.some((edge) => edge.target === node.id)
-    );
-    if (startNode) {
-      dfs(startNode.id);
-    }
-
-    // Handle any disconnected nodes
-    nodes.forEach((node) => {
-      if (!visited.has(node.id)) {
-        sorted.push(node);
-      }
-    });
-
-    console.log("Sorted nodes: ", sorted);
-    return sorted;
+    return `process-${randomPart}`;
   };
 
   const convertToBPMN = (nodes, edges) => {
-    // Ensure nodes and edges are defined and not empty
     if (nodes.length === 0 || edges.length === 0) {
       console.error("Nodes or edges are undefined or empty");
       return;
     }
-
+  
     let pdKey = generateProcessDefinitionKey();
-
+  
     let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
   <definitions
    xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
@@ -81,51 +37,101 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
    typeLanguage="http://www.w3.org/2001/XMLSchema"
    expressionLanguage="http://www.w3.org/1999/XPath"
    targetNamespace="http://www.flowable.org/processdef">
-    <process id="${pdKey}" name="${pdKey}" isExecutable="true">
-      <startEvent id="start" name="Start"/>`;
-
-    // Sort nodes based on their connections to ensure sequential order
-    const sortedNodes = sortNodesSequentially(nodes, edges);
-
-    if (sortedNodes.length === 0) {
-      console.error("Sorted nodes are empty");
-      return;
-    }
-
-    // Create nodes and sequence flows
-    sortedNodes.forEach((node, index) => {
-      const nodeType = getNodeType(node.data.nodeType);
-      const nodeMethod = getNodeMethod(node.data.nodeType);
-      const prevNode = index === 0 ? "start" : sortedNodes[index - 1].id;
-      const nextNode = sortedNodes[index + 1]
-        ? sortedNodes[index + 1].id
-        : "end";
-
-      bpmnXml += `
-      <sequenceFlow id="flow${index + 1}" sourceRef="${prevNode}" targetRef="${
-        node.id
-      }"/>
-      <${nodeType} id="${node.id}" name="${
-        node.data.label
-      }" activiti:class="${nodeMethod}">
-        <incoming>flow${index + 1}</incoming>
-        <outgoing>flow${index + 2}</outgoing>
-      </${nodeType}>`;
+    <process id="${pdKey}" name="${pdKey}" isExecutable="true">`;
+  
+    const nodeMap = new Map(nodes.map((node) => [node.id, node]));
+    const edgeMap = new Map();
+    edges.forEach((edge) => {
+      if (!edgeMap.has(edge.source)) {
+        edgeMap.set(edge.source, []);
+      }
+      edgeMap.get(edge.source).push(edge);
     });
+  
+    const visited = new Set();
+    let flowCounter = 1;
+  
+    const dfs = (nodeId, prevNodeId) => {
+      if (visited.has(nodeId)) return;
+      visited.add(nodeId);
+  
+      const node = nodeMap.get(nodeId);
+      const nodeType = getNodeType(node.type);
+      const nodeMethod = getNodeMethod(node.data.nodeType);
+      const nextEdges = edgeMap.get(nodeId) || [];
+  
+      if (nodeType === "startEvent") {
+        bpmnXml += `
+        <${nodeType} id="${node.id}" name="${node.data.label}"/>`;
+      } else if (nodeType === "endEvent") {
+        bpmnXml += `
+        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${node.id}"/>
+        <${nodeType} id="${node.id}" name="${node.data.label}"/>`;
+      } else if (nodeType === "exclusiveGateway") {
+        bpmnXml += `
+        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${node.id}"/>
+        <${nodeType} id="node_${node.id}" name="${node.data.label}">
+          <incoming>flow_${flowCounter - 1}</incoming>`;
+        nextEdges.forEach((edge, idx) => {
+          const condition = edge.label === "Yes" ? "yes" : "no";
+          bpmnXml += `
+          <outgoing>flow_${flowCounter}</outgoing>
+          <sequenceFlow id="flow_${flowCounter++}" sourceRef="${node.id}" targetRef="${edge.target}" name="${condition}"/>`;
+        });
+        bpmnXml += `
+        </${nodeType}>`;
+      } else {
+        bpmnXml += `
+        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${node.id}"/>
+        <${nodeType} id="${node.id}" name="${node.data.label}" activiti:class="${nodeMethod}">
+           ${generateFieldExtensions(node.data)}
+          <incoming>flow_${flowCounter - 1}</incoming>
+          <outgoing>flow_${flowCounter}</outgoing>
+        </${nodeType}>`;
+      }
+  
+      nextEdges.forEach((edge) => {
+        dfs(edge.target, node.id);
+      });
+    };
 
-    // Add end event
+    const generateFieldExtensions = (data) => {
+      if (!data.variables && !data.expressions) return '';
+    
+      let extensions = '<extensionElements>';
+      if (data.variables) {
+        Object.entries(data.variables).forEach(([key, value]) => {
+          extensions += `
+            <activiti:field name="${key}">
+              <activiti:string>${value}</activiti:string>
+            </activiti:field>`;
+        });
+      }
+      if (data.expressions) {
+        Object.entries(data.expressions).forEach(([key, value]) => {
+          extensions += `
+            <activiti:field name="${key}">
+              <activiti:expression>${value}</activiti:expression>
+            </activiti:field>\n`;
+        });
+      }
+      extensions += '</extensionElements>';
+      return extensions;
+    };
+  
+    const startNode = nodes.find((node) => node.type === "start");
+    if (startNode) {
+      dfs(startNode.id, "start");
+    }
+  
     bpmnXml += `
-      <sequenceFlow id="flow${sortedNodes.length + 1}" sourceRef="${
-      sortedNodes[sortedNodes.length - 1].id
-    }" targetRef="end"/>
-      <endEvent id="end" name="End">
-        <incoming>flow${sortedNodes.length + 1}</incoming>
-      </endEvent>
-    </process>
+      </process>
   </definitions>`;
-
+  
     return bpmnXml;
-  };
+  }; 
+
+
 
   const downloadXml = (bpmnXml) => {
     const blob = new Blob([bpmnXml], { type: "application/xml" });
@@ -147,27 +153,34 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
         return "com.flowable.services.WhatsAppSendTask";
       case "email":
         return "com.flowable.services.EmailServiceTask";
+      case "decision":
+        return "";
       default:
         return "";
     }
   };
 
-  const getNodeType = (nodeType) => {
-    switch (nodeType) {
+  const getNodeType = (type) => {
+    switch (type) {
+      case "start":
+        return "startEvent";
+      case "end":
+        return "endEvent";
       case "sms":
-        return "serviceTask";
+      case "whatsapp":
       case "email":
-        return "serviceTask";
       case "botCall":
         return "serviceTask";
-      case "whatsapp":
-        return "serviceTask";
+      case "fieldAgent":
+      case "teleCall":
+        return "userTask";
+      case "exclusiveGateway":
+        return "exclusiveGateway";
       default:
         return "userTask";
     }
   };
 
-  // Check if any node is unconnected
   const isNodeUnconnected = useCallback(() => {
     let unconnectedNodes = nodes.filter(
       (node) =>
@@ -202,16 +215,13 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
 
       // Deploy xml to flowable
       // try {
-      //   const response = await fetch(
-      //     `${process.env.REACT_APP_FLOWABLE_BASE_URL}/deployProcess`,
-      //     {
-      //       method: "POST",
-      //       headers: {
-      //         "Content-Type": "application/xml",
-      //       },
-      //       body: bpmnXml,
-      //     }
-      //   );
+      //   const response = await fetch(`${process.env.REACT_APP_FLOWABLE_BASE_URL}/deployProcess`, {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/xml",
+      //     },
+      //     body: bpmnXml,
+      //   });
 
       //   if (!response.ok) {
       //     console.log(`Error! status: ${response.status}`);
@@ -224,14 +234,9 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       //     return;
       //   }
 
-      //   console.log(
-      //     "Process Definition Key ----> ",
-      //     responseObj.processDefinitionKey
-      //   );
+      //   console.log("Process Definition Key ----> ", responseObj.processDefinitionKey);
 
-      //   alert(
-      //     `Process Deployed - deployment key : ${responseObj.processDefinitionKey}`
-      //   );
+      //   alert(`Process Deployed - deployment key : ${responseObj.processDefinitionKey}`);
 
       //   setProcessDefinitionKey(responseObj.processDefinitionKey);
       // } catch (error) {
