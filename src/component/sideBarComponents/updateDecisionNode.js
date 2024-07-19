@@ -145,6 +145,52 @@ export default function UpdateDecisionNode({
           </button>
         </div>
       </div>
+      <div className="mt-4 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
+        <p className="font-medium text-gray-800">Expressions</p>
+        {Object.keys(nodeExpressions).length > 0 && (
+          <div className="relative space-y-2 bg-inherit rounded-lg w-full">
+            {Object.entries(nodeExpressions).map(([key, value]) => (
+              <div key={key} className="relative flex items-center">
+                <h1
+                  onClick={() => {
+                    setAddExpression(false);
+                    setEditExpression(true);
+                    setExpression({
+                      name: key,
+                      condition: value.condition,
+                      value: value.value,
+                    });
+                  }}
+                  className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
+                >
+                  {key}
+                </h1>
+                <FaTrashAlt
+                  id={key}
+                  className="text-gray-500 hover:text-red-500 ml-2 cursor-pointer"
+                  onClick={() => handleDeleteExpression(key)}
+                />
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex flex-col justify-center">
+          <button
+            className={`bg-white font-semibold border rounded-md border-dashed p-1 ${
+              addExpression || editExpression
+                ? "border-gray-600 text-gray-600 cursor-not-allowed"
+                : "border-blue-500 text-blue-500 hover:bg-blue-50"
+            }`}
+            disabled={addExpression || editExpression}
+            onClick={() => {
+              setAddExpression(true);
+              setExpression({ name: "", condition: "", value: "" });
+            }}
+          >
+            New Expression +
+          </button>
+        </div>
+      </div>
       {(addExpression || editExpression) && (
         <div className="mt-6 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400">
           <p className="font-medium w-auto h-auto text-gray-800">

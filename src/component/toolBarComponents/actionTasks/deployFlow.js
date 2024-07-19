@@ -22,23 +22,22 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       console.error("Nodes or edges are undefined or empty");
       return;
     }
-  
+
     let pdKey = generateProcessDefinitionKey();
-  
+
     let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
-  <definitions
-   xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-   xmlns:activiti="http://activiti.org/bpmn"
-   xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
-   xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
-   xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
-   typeLanguage="http://www.w3.org/2001/XMLSchema"
-   expressionLanguage="http://www.w3.org/1999/XPath"
-   targetNamespace="http://www.flowable.org/processdef">
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+  xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC"
+  xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI"
+  xmlns:flowable="http://flowable.org/bpmn"
+  typeLanguage="http://www.w3.org/2001/XMLSchema"
+  expressionLanguage="http://www.w3.org/1999/XPath"
+  targetNamespace="http://www.flowable.org/processdef">
     <process id="${pdKey}" name="${pdKey}" isExecutable="true">`;
-  
+
     const nodeMap = new Map(nodes.map((node) => [node.id, node]));
     const edgeMap = new Map();
     edges.forEach((edge) => {
@@ -47,91 +46,131 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       }
       edgeMap.get(edge.source).push(edge);
     });
-  
+
     const visited = new Set();
     let flowCounter = 1;
-  
+
     const dfs = (nodeId, prevNodeId) => {
       if (visited.has(nodeId)) return;
       visited.add(nodeId);
-  
+
       const node = nodeMap.get(nodeId);
       const nodeType = getNodeType(node.type);
       const nodeMethod = getNodeMethod(node.data.nodeType);
       const nextEdges = edgeMap.get(nodeId) || [];
-  
+
       if (nodeType === "startEvent") {
         bpmnXml += `
         <${nodeType} id="${node.id}" name="${node.data.label}"/>`;
       } else if (nodeType === "endEvent") {
         bpmnXml += `
-        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${node.id}"/>
+        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
+          node.id
+        }"/>
         <${nodeType} id="${node.id}" name="${node.data.label}"/>`;
       } else if (nodeType === "exclusiveGateway") {
         bpmnXml += `
-        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${node.id}"/>
-        <${nodeType} id="node_${node.id}" name="${node.data.label}">
-          <incoming>flow_${flowCounter - 1}</incoming>`;
-        nextEdges.forEach((edge, idx) => {
-          const condition = edge.label === "Yes" ? "yes" : "no";
-          bpmnXml += `
-          <outgoing>flow_${flowCounter}</outgoing>
-          <sequenceFlow id="flow_${flowCounter++}" sourceRef="${node.id}" targetRef="${edge.target}" name="${condition}"/>`;
-        });
-        bpmnXml += `
-        </${nodeType}>`;
+        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
+          node.id
+        }"/>
+        <${nodeType} id="${node.id}" name="${node.data.label}"/>`;
+
+        if (Object.keys(node.data.expressions).length > 0) {
+          const expressionKey = Object.keys(node.data.expressions)[0];
+          const expressionCondition =
+            node.data.expressions[expressionKey].condition;
+          const expressionValue = node.data.expressions[expressionKey].value;
+
+          nextEdges.forEach((edge, idx) => {
+            const isPositivePath = edge.sourceHandle === "yes";
+            let condition;
+            if (isPositivePath) {
+              condition = `\${${expressionKey} ${expressionCondition} '${expressionValue}'}`;
+            } else {
+              condition = `\${${expressionKey} ${getOppositeCondition(
+                expressionCondition
+              )} '${expressionValue}'}`;
+            }
+
+            bpmnXml += `
+            <sequenceFlow id="flow_${flowCounter}" sourceRef="${node.id}" targetRef="${edge.target}" name="${edge.sourceHandle}">
+              <conditionExpression xsi:type="tFormalExpression"><![CDATA[${condition}]]></conditionExpression>
+            </sequenceFlow>`;
+
+            flowCounter++;
+          });
+        }
       } else {
         bpmnXml += `
-        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${node.id}"/>
-        <${nodeType} id="${node.id}" name="${node.data.label}" activiti:class="${nodeMethod}">
-           ${generateFieldExtensions(node.data)}
+        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
+          node.id
+        }"/>
+        <${nodeType} id="${node.id}" name="${
+          node.data.label
+        }" flowable:class="${nodeMethod}">
+           ${generateFieldExtensions(node.data, nodeType)}
           <incoming>flow_${flowCounter - 1}</incoming>
           <outgoing>flow_${flowCounter}</outgoing>
         </${nodeType}>`;
       }
-  
+
       nextEdges.forEach((edge) => {
         dfs(edge.target, node.id);
       });
     };
 
-    const generateFieldExtensions = (data) => {
-      if (!data.variables && !data.expressions) return '';
-    
-      let extensions = '<extensionElements>';
+    const getOppositeCondition = (condition) => {
+      switch (condition) {
+        case "==":
+          return "!=";
+        case "!=":
+          return "==";
+        case ">":
+          return "<=";
+        case "<":
+          return ">=";
+        case ">=":
+          return "<";
+        case "<=":
+          return ">";
+        default:
+          return "!=";
+      }
+    };
+
+    const generateFieldExtensions = (data, nodeType) => {
+      if (!data.variables && !data.expressions) return "";
+
+      let extensions = "<extensionElements>";
       if (data.variables) {
         Object.entries(data.variables).forEach(([key, value]) => {
           extensions += `
-            <activiti:field name="${key}">
-              <activiti:string>${value}</activiti:string>
-            </activiti:field>`;
+            <flowable:formProperty id="${key}" name="${value}" type="string" required="true"/>`;
         });
-      }
-      if (data.expressions) {
-        Object.entries(data.expressions).forEach(([key, value]) => {
+        if (nodeType === "serviceTask") {
           extensions += `
-            <activiti:field name="${key}">
-              <activiti:expression>${value}</activiti:expression>
-            </activiti:field>\n`;
-        });
+            <flowable:executionListener event="start" class="com.flowable.listeners.ServiceTaskPropertiesListener"/>`;
+        } else if (nodeType === "userTask") {
+          extensions += `
+            <flowable:executionListener event="start" class="com.flowable.listeners.UserTaskPropertiesListener"/>`;
+        }
       }
-      extensions += '</extensionElements>';
+      extensions += `
+           </extensionElements>`;
       return extensions;
     };
-  
+
     const startNode = nodes.find((node) => node.type === "start");
     if (startNode) {
       dfs(startNode.id, "start");
     }
-  
+
     bpmnXml += `
       </process>
   </definitions>`;
-  
+
     return bpmnXml;
-  }; 
-
-
+  };
 
   const downloadXml = (bpmnXml) => {
     const blob = new Blob([bpmnXml], { type: "application/xml" });
@@ -153,6 +192,8 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
         return "com.flowable.services.WhatsAppSendTask";
       case "email":
         return "com.flowable.services.EmailServiceTask";
+      case "wait":
+        return "com.flowable.services.WaitServiceTask";
       case "decision":
         return "";
       default:
@@ -170,11 +211,12 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       case "whatsapp":
       case "email":
       case "botCall":
+      case "wait":
         return "serviceTask";
       case "fieldAgent":
       case "teleCall":
         return "userTask";
-      case "exclusiveGateway":
+      case "decision":
         return "exclusiveGateway";
       default:
         return "userTask";

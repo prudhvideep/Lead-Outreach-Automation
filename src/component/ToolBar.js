@@ -8,7 +8,6 @@ const ToolBar = ({ nodes, edges }) => {
 
   return (
     <div className="relative mt-2">
-      <FlowIcon />
       <Input 
         flowName={flowName} 
         setFlowName={setFlowName} 

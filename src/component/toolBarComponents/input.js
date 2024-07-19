@@ -14,7 +14,7 @@ const Input = ({flowName,setFlowName}) => {
         placeholder="Flow Name"
         disabled={!editable}
         onChange={(event) => {setFlowName(event.target.value)}}
-        className={`block ml-14 py-1.5 pl-4 pr-8 h-10 border-2 text-lg rounded-xl shadow-sm font-medium
+        className={`block ml-1 py-1.5 pl-4 pr-8 h-10 border-2 text-lg rounded-xl shadow-sm font-medium
           ${
             editable
               ? "border-gray-400 text-black bg-white hover:border-gray-600"

@@ -1,9 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { HiVariable } from "react-icons/hi2";
 import { TbMathFunction } from "react-icons/tb";
 import { FiClock } from 'react-icons/fi';
-
 
 export default function UpdateNode({
   selectedNode,
@@ -19,13 +18,18 @@ export default function UpdateNode({
   const [addVariable, setAddVariable] = useState(false);
   const [editVariable, setEditVariable] = useState(false);
   const [variable, setVariable] = useState({ name: "", value: "" });
-  const [waitTime, setWaitTime] = useState(nodeVariables.waitTime || "");
+  const [waitTime, setWaitTime] = useState(nodeVariables[`${selectedNode.id}+waitTime`] || "");
+
+  useEffect(() => {
+    setWaitTime(nodeVariables[`${selectedNode.id}+waitTime`] || "");
+  }, [selectedNode, nodeVariables]);
 
   // Process the text to replace the variables with values
   const processText = (text) => {
     let processedText = text;
     Object.entries(nodeVariables).forEach(([key, value]) => {
-      const regex = new RegExp(`\\{${key}\\}`, "g");
+      let splitVar = key.split("+")[1];
+      const regex = new RegExp(`\\{${splitVar}\\}`, "g");
       processedText = processedText.replace(regex, value);
     });
     return processedText;
@@ -59,9 +63,10 @@ export default function UpdateNode({
   };
 
   const handleCreateVariable = () => {
+    let concatVariable = `${selectedNode.id}+${variable.name}`;
     let updatedVariables = {
       ...nodeVariables,
-      [variable.name]: variable.value,
+      [concatVariable]: variable.value,
     };
     setNodeVariables(updatedVariables);
     setNodes((nds) =>
@@ -115,8 +120,9 @@ export default function UpdateNode({
   };
 
   const handleWaitTimeChange = (event) => {
+    const catKey = `${selectedNode.id}+waitTime`;
     setWaitTime(event.target.value);
-    setNodeVariables({ ...nodeVariables, waitTime: event.target.value });
+    setNodeVariables({ ...nodeVariables, [catKey]: event.target.value });
     setNodes((nds) =>
       nds.map((node) => {
         if (node.id === selectedNode.id) {
@@ -126,7 +132,7 @@ export default function UpdateNode({
               ...node.data,
               variables: {
                 ...node.data.variables,
-                waitTime: event.target.value,
+                [catKey]: event.target.value,
               },
             },
           };
@@ -145,18 +151,14 @@ export default function UpdateNode({
           type="text"
           className="block w-full pt-2 px-3 pb-3 overflow-y-auto text-gray-700 border border-gray-400 rounded-lg bg-white-500 break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
           value={nodeInfoVar}
-          onChange={(event) => {
-            handleInfoChange(event);
-          }}
+          onChange={handleInfoChange}
           placeholder="Add text and {variables}"
           style={{ height: "160px" }}
         />
       </div>
-      <div className="relative p-4 mt-6 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
+      <div className="relative p-4 mt-6 space-y-2 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
         <p className="font-medium text-gray-800">Wait Time</p>
-        <FiClock
-          className="absolute inset-y-1 right-5" 
-        />
+        <FiClock className="absolute inset-y-1 right-5" />
         <input
           type="number"
           className="block w-full pt-2 px-3 pb-3 text-gray-700 border border-gray-400 rounded-lg bg-white-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
@@ -182,7 +184,7 @@ export default function UpdateNode({
                   }}
                   className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
                 >
-                  {key}
+                  {key.split('+')[1]}
                 </h1>
                 <FaTrashAlt
                   id={key}
@@ -229,7 +231,7 @@ export default function UpdateNode({
                 editVariable ? "bg-gray-100" : ""
               }`}
               disabled={editVariable}
-              value={variable.name}
+              value={variable.name.split("+")[1]}
               onChange={handleVariableNameChange}
             />
           </div>
@@ -243,8 +245,7 @@ export default function UpdateNode({
               </span>
             </div>
             <input
-              className="mt-1 block w-full p-1 px-3 text-gray-700 border border-gray-
-              300 rounded-lg break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className="mt-1 block w-full p-1 px-3 text-gray-700 border border-gray-300 rounded-lg break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
               value={variable.value}
               onChange={handleVariableValueChange}
             />

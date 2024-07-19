@@ -68,6 +68,10 @@ export default function Sidebar({
 
       {sidebarExpand && selectedNode ? (
         <NodeEditor
+          nodes={nodes}
+          setNodes={setNodes}
+          edges={edges}
+          setEdges={setEdges}
           selectedNode={selectedNode}
           nodeInfo={nodeInfo}
           setNodeInfo={setNodeInfo}
@@ -77,7 +81,6 @@ export default function Sidebar({
           setNodeVariables={setNodeVariables}
           nodeExpressions={nodeExpressions}
           setNodeExpressions={setNodeExpressions}
-          setNodes={setNodes}
           setSelectedElements={setSelectedElements}
           handleDelete={handleDelete}
         />
