@@ -18,17 +18,17 @@ export default function UpdateNode({
   const [addVariable, setAddVariable] = useState(false);
   const [editVariable, setEditVariable] = useState(false);
   const [variable, setVariable] = useState({ name: "", value: "" });
-  const [waitTime, setWaitTime] = useState(nodeVariables[`${selectedNode.id}+waitTime`] || "");
+  const [waitTime, setWaitTime] = useState(nodeVariables[`${selectedNode.id}$waitTime`] || "");
 
   useEffect(() => {
-    setWaitTime(nodeVariables[`${selectedNode.id}+waitTime`] || "");
+    setWaitTime(nodeVariables[`${selectedNode.id}$waitTime`] || "");
   }, [selectedNode, nodeVariables]);
 
   // Process the text to replace the variables with values
   const processText = (text) => {
     let processedText = text;
     Object.entries(nodeVariables).forEach(([key, value]) => {
-      let splitVar = key.split("+")[1];
+      let splitVar = key.split("$")[1];
       const regex = new RegExp(`\\{${splitVar}\\}`, "g");
       processedText = processedText.replace(regex, value);
     });
@@ -63,7 +63,7 @@ export default function UpdateNode({
   };
 
   const handleCreateVariable = () => {
-    let concatVariable = `${selectedNode.id}+${variable.name}`;
+    let concatVariable = `${selectedNode.id}$${variable.name}`;
     let updatedVariables = {
       ...nodeVariables,
       [concatVariable]: variable.value,
@@ -120,7 +120,7 @@ export default function UpdateNode({
   };
 
   const handleWaitTimeChange = (event) => {
-    const catKey = `${selectedNode.id}+waitTime`;
+    const catKey = `${selectedNode.id}$waitTime`;
     setWaitTime(event.target.value);
     setNodeVariables({ ...nodeVariables, [catKey]: event.target.value });
     setNodes((nds) =>
@@ -184,7 +184,7 @@ export default function UpdateNode({
                   }}
                   className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
                 >
-                  {key.split('+')[1]}
+                  {key.split('$')[1]}
                 </h1>
                 <FaTrashAlt
                   id={key}
@@ -231,7 +231,7 @@ export default function UpdateNode({
                 editVariable ? "bg-gray-100" : ""
               }`}
               disabled={editVariable}
-              value={variable.name.split("+")[1]}
+              value={variable.name.split("$")[1]}
               onChange={handleVariableNameChange}
             />
           </div>

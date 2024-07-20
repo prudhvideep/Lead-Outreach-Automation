@@ -56,7 +56,7 @@ const App = () => {
   const [selectedElements, setSelectedElements] = useState([]);
   const [nodeName, setNodeName] = useState("");
   const [nodeInfo, setNodeInfo] = useState("");
-  const [nodeInfoVar,setNodeInfoVar] = useState("");
+  const [nodeInfoVar, setNodeInfoVar] = useState("");
   const [nodeVariables, setNodeVariables] = useState({});
   const [nodeExpressions, setNodeExpressions] = useState({});
   const [processDefinitionKey, setProcessDefinitionKey] = useState(null);
@@ -64,6 +64,15 @@ const App = () => {
   const [deploying, setDeploying] = useState(false);
   const [starting, setStarting] = useState(false);
   const [completedTasks, setCompletedTasks] = useState([]);
+  const nodeCountsRef = useRef({
+    sms: 0,
+    whatsapp: 0,
+    email: 0,
+    botCall: 0,
+    fieldAgent: 0,
+    teleCall: 0,
+    wait: 0,
+  });
 
   //Constants
   const EDGE_COLOR = "#b1b1b7";
@@ -279,16 +288,25 @@ const App = () => {
         y: event.clientY,
       });
 
+      const getNodeName = (nodeType) => {
+        nodeCountsRef.current[nodeType] =
+          (nodeCountsRef.current[nodeType] || 0) + 1;
+        const count = nodeCountsRef.current[nodeType];
+        return `${nodeType}#${count}`;
+      };
+
       const newNode = {
         id: getId(),
         type: `${type}`,
         nodeActionType: `${nodeActionType}`,
         position,
         data: {
+          name: `${getNodeName(type)}`,
           label: `${type}`,
           nodeType: type,
           info: "",
           infoVar: "",
+          decisionNode: {},
           variables: {},
           expressions: {},
         },
@@ -355,10 +373,7 @@ const App = () => {
           <Controls />
           <MiniMap zoomable pannable />
           <Panel>
-            <ToolBar 
-              nodes={nodes} 
-              edges={edges} 
-            />
+            <ToolBar nodes={nodes} edges={edges} />
           </Panel>
         </ReactFlow>
       </div>

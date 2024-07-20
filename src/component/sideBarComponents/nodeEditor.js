@@ -6,6 +6,10 @@ import UpdateStartOrEndNode from "./updateStartOrEndNode";
 import UpdateDecisionNode from "./updateDecisionNode";
 
 const NodeEditor = ({
+  nodes,
+  setNodes,
+  edges,
+  setEdges,
   selectedNode,
   nodeInfo,
   setNodeInfo,
@@ -15,7 +19,6 @@ const NodeEditor = ({
   setNodeVariables,
   nodeExpressions,
   setNodeExpressions,
-  setNodes,
   setSelectedElements,
   handleDelete,
 }) => {
@@ -66,6 +69,10 @@ const NodeEditor = ({
       {selectedNode.nodeActionType === "control" &&
         (selectedNode.type === "decision") && (
           <UpdateDecisionNode
+            nodes={nodes}
+            setNodes={setNodes}
+            edges={edges}
+            setEdges={setEdges}
             selectedNode={selectedNode}
             setNodeInfo={setNodeInfo}
             nodeInfoVar={nodeInfoVar}
@@ -74,7 +81,6 @@ const NodeEditor = ({
             setNodeVariables={setNodeVariables}
             nodeExpressions={nodeExpressions}
             setNodeExpressions={setNodeExpressions}
-            setNodes={setNodes}
             setSelectedElements={setSelectedElements}
             handleDelete={handleDelete}
           />

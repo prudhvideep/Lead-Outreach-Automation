@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Input from "./toolBarComponents/input";
-import FlowIcon from "./toolBarComponents/flowIcon";
 import Actions from "./toolBarComponents/actions";
 
 const ToolBar = ({ nodes, edges }) => {

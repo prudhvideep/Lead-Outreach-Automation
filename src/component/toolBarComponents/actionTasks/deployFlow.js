@@ -55,7 +55,9 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       visited.add(nodeId);
 
       const node = nodeMap.get(nodeId);
+      console.log("Node Map ----- > ",nodeMap);
       const nodeType = getNodeType(node.type);
+      console.log("Node type ----> ",node.data.nodeType)
       const nodeMethod = getNodeMethod(node.data.nodeType);
       const nextEdges = edgeMap.get(nodeId) || [];
 
@@ -256,35 +258,35 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       }
 
       // Deploy xml to flowable
-      // try {
-      //   const response = await fetch(`${process.env.REACT_APP_FLOWABLE_BASE_URL}/deployProcess`, {
-      //     method: "POST",
-      //     headers: {
-      //       "Content-Type": "application/xml",
-      //     },
-      //     body: bpmnXml,
-      //   });
+      try {
+        const response = await fetch(`${process.env.REACT_APP_FLOWABLE_BASE_URL}/deployProcess`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/xml",
+          },
+          body: bpmnXml,
+        });
 
-      //   if (!response.ok) {
-      //     console.log(`Error! status: ${response.status}`);
-      //   }
+        if (!response.ok) {
+          console.log(`Error! status: ${response.status}`);
+        }
 
-      //   const responseObj = await response.json();
+        const responseObj = await response.json();
 
-      //   if (!responseObj?.processDefinitionKey) {
-      //     alert("Error: Process Deployment Failed!!!");
-      //     return;
-      //   }
+        if (!responseObj?.processDefinitionKey) {
+          alert("Error: Process Deployment Failed!!!");
+          return;
+        }
 
-      //   console.log("Process Definition Key ----> ", responseObj.processDefinitionKey);
+        console.log("Process Definition Key ----> ", responseObj.processDefinitionKey);
 
-      //   alert(`Process Deployed - deployment key : ${responseObj.processDefinitionKey}`);
+        alert(`Process Deployed - deployment key : ${responseObj.processDefinitionKey}`);
 
-      //   setProcessDefinitionKey(responseObj.processDefinitionKey);
-      // } catch (error) {
-      //   console.error("Error during deployment ----> ", error);
-      //   alert("Error: Process Deployment Failed!!!");
-      // }
+        setProcessDefinitionKey(responseObj.processDefinitionKey);
+      } catch (error) {
+        console.error("Error during deployment ----> ", error);
+        alert("Error: Process Deployment Failed!!!");
+      }
 
       downloadXml(bpmnXml);
     }
