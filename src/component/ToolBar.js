@@ -11,6 +11,7 @@ const ToolBar = ({ nodes, edges, completedTasks, setCompletedTasks }) => {
   const [fetching, setFetching] = useState(false);
 
   return (
+    <>
     <div className="relative mt-2">
       <Input flowName={flowName} setFlowName={setFlowName} />
       <Actions
@@ -30,6 +31,7 @@ const ToolBar = ({ nodes, edges, completedTasks, setCompletedTasks }) => {
         setCompletedTasks={setCompletedTasks}
       />
     </div>
+    </>
   );
 };
 

@@ -68,6 +68,7 @@ const App = () => {
     teleCall: 0,
     wait: 0,
   });
+  const [errorMessage, setErrorMessage] = useState("Error: Something went wrong!"); 
 
   //Constants
   const EDGE_COLOR = "#b1b1b7";

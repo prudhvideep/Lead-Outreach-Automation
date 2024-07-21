@@ -7,7 +7,7 @@ function EndNode({ data, selected }) {
     <>
       <div
         className={`relative shadow-xl flex items-center justify-center bg-white w-10 h-10 text-center bg-red-10 border border-red-500 rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 ${
-          selected ? "border-solid border-2 border-indigo-500" : ""
+          selected ? "border-solid border-2 border-red-500" : ""
         }`}
       >
          <IoStopOutline

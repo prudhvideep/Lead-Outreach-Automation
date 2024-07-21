@@ -1,6 +1,6 @@
 import React from "react";
 import { GoGear } from "react-icons/go";
-import { ImSpinner9 } from "react-icons/im";
+import { ImSpinner } from "react-icons/im";
 
 const ExecuteFlow = ({
   collapse,
@@ -69,7 +69,7 @@ const ExecuteFlow = ({
       onClick={starting ? null : startProcess}
     >
       {starting ? (
-        <ImSpinner9 className="text-xl animate-spin text-indigo-500" />
+        <ImSpinner className="text-xl animate-spin text-indigo-500" />
       ) : (
         <GoGear className="text-xl" />
       )}

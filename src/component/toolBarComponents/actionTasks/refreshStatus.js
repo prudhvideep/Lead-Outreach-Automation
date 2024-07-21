@@ -1,6 +1,6 @@
 import React from "react";
 import { SlRefresh } from "react-icons/sl";
-import { ImSpinner9 } from "react-icons/im";
+import { ImSpinner } from "react-icons/im";
 
 const RefreshStatus = ({
   collapse,
@@ -34,7 +34,7 @@ const RefreshStatus = ({
       onClick={fetching ? null : fetchCompletedTasks}
     >
       {fetching ? (
-        <ImSpinner9 className="text-xl animate-spin text-indigo-500" />
+        <ImSpinner className="text-xl animate-spin text-indigo-500" />
       ) : (
         <SlRefresh className="text-xl font-bold" />
       )}

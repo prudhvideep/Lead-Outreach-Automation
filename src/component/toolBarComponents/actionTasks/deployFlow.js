@@ -1,6 +1,6 @@
 import React, { useCallback } from "react";
 import { GrDeploy } from "react-icons/gr";
-import { ImSpinner9 } from "react-icons/im";
+import { ImSpinner } from "react-icons/im";
 
 const DeployFlow = ({
   nodes,
@@ -182,15 +182,15 @@ const DeployFlow = ({
     return bpmnXml;
   };
 
-  // const downloadXml = (bpmnXml) => {
-  //   const blob = new Blob([bpmnXml], { type: "application/xml" });
-  //   const link = document.createElement("a");
-  //   link.download = "flow.bpmn";
-  //   link.href = URL.createObjectURL(blob);
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
+  const downloadXml = (bpmnXml) => {
+    const blob = new Blob([bpmnXml], { type: "application/xml" });
+    const link = document.createElement("a");
+    link.download = "flow.bpmn";
+    link.href = URL.createObjectURL(blob);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getNodeMethod = (nodeType) => {
     switch (nodeType) {
@@ -309,7 +309,7 @@ const DeployFlow = ({
         alert("Error: Process Deployment Failed!!!");
       }
 
-      //downloadXml(bpmnXml);
+      downloadXml(bpmnXml);
     }
   };
 
@@ -322,7 +322,7 @@ const DeployFlow = ({
       onClick={deploying ? null : handleDeploy}
     >
       {deploying ? (
-        <ImSpinner9 className="text-xl animate-spin text-indigo-500" />
+        <ImSpinner className="text-xl animate-spin text-indigo-500" />
       ) : (
         <GrDeploy className="text-xl" />
       )}

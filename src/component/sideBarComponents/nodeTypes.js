@@ -23,6 +23,6 @@ export const manualNodeTypes = [
 export const controlNodesTypes = [
   { type: "start", label: "Start", icon: <FiPlayCircle />, color: "green", shade: "500", nodeActionType: "control" },
   { type: "end", label: "End", icon: <FiStopCircle />, color: "red", shade: "500", nodeActionType: "control" },
-  { type: "decision", label: "Decision", icon: <FiHexagon />, color: "yellow", shade: "500", nodeActionType: "control" },
+  { type: "decision", label: "Decision", icon: <FiHexagon />, color: "orange", shade: "500", nodeActionType: "control" },
   { type: "wait", label: "Wait", icon: <FiClock />, color: "yellow", shade: "500", nodeActionType: "control" },
 ];

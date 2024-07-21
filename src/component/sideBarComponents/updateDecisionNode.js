@@ -193,7 +193,7 @@ export default function UpdateDecisionNode({
         ];
       case "email":
         return [
-          {value: "Delivered", label: "Delivered"},
+          {value: "Sent", label: "Sent"},
           {value: "Failed", label: "Failed"}
         ];
       case "botCall":
