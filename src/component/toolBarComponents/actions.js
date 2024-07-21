@@ -4,9 +4,23 @@ import DeployFlow from "./actionTasks/deployFlow";
 import ExecuteFlow from "./actionTasks/executeFlow";
 import RefreshStatus from "./actionTasks/refreshStatus";
 
-const Actions = ( {nodes,edges} ) => {
+const Actions = ({
+  nodes,
+  edges,
+  processDefinitionKey,
+  setProcessDefinitionKey,
+  processInstanceId,
+  setProcessInstanceId,
+  deploying,
+  setDeploying,
+  starting,
+  setStarting,
+  fetching,
+  setFetching,
+  completedTasks,
+  setCompletedTasks,
+}) => {
   const [collapse, setCollapse] = useState(false);
-  const [processDefinitionKey,setProcessDefinitionKey] = useState('');
 
   return (
     <div className="absolute inset-y-0 left-72">
@@ -14,15 +28,29 @@ const Actions = ( {nodes,edges} ) => {
         <DeployFlow
           nodes={nodes}
           edges={edges}
+          deploying={deploying}
+          setDeploying={setDeploying}
           collapse={collapse}
           processDefinitionKey={processDefinitionKey}
           setProcessDefinitionKey={setProcessDefinitionKey}
         />
         <ExecuteFlow
           collapse={collapse}
+          starting={starting}
+          setStarting={setStarting}
+          processInstanceId={processInstanceId}
+          setProcessInstanceId={setProcessInstanceId}
+          processDefinitionKey={processDefinitionKey}
+          setProcessDefinitionKey={setProcessDefinitionKey}
         />
         <RefreshStatus
           collapse={collapse}
+          fetching={fetching}
+          completedTasks={completedTasks}
+          setCompletedTasks={setCompletedTasks}
+          setFetching={setFetching}
+          processInstanceId={processInstanceId}
+          setProcessInstanceId={setProcessInstanceId}
         />
         {!collapse && (
           <FaAngleDoubleLeft

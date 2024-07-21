@@ -11,20 +11,30 @@ module.exports = {
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
-          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+          "conic-gradient(from 18deg at 50% 50%, var(--tw-gradient-stops))",
       },
       transitionProperty: {
         height: "height",
         spacing: "margin, padding",
+        opacity: "opacity",
+        boxShadow: "box-shadow",
       },
       transitionDuration: {
         200: "200ms",
+        300: "300ms",
       },
       scale: {
         105: "1.05",
       },
       boxShadow: {
         md: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        glow: "0 0 10px rgba(74, 222, 128, 0.5)",
+      },
+      colors: {
+        completed: {
+          DEFAULT: "#4ade80",
+          edge: "#86efac",
+        },
       },
     },
   },
@@ -32,7 +42,7 @@ module.exports = {
     extend: {
       scale: ["hover", "focus"],
       translate: ["hover", "focus"],
-      opacity: ["group-hover"],
+      opacity: ["group-hover", "hover"],
       boxShadow: ["hover", "focus"],
     },
   },
@@ -57,5 +67,13 @@ module.exports = {
     'text-red-500',
     'text-stone-500',
     'text-yellow-500',
+    'opacity-70',
+    'opacity-100',
+    'transition-all',
+    'duration-300',
+    'shadow-glow',
+    'bg-completed',
+    'text-completed',
+    'stroke-completed-edge',
   ],
 };

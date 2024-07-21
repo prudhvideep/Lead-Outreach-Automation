@@ -5,7 +5,6 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   Panel,
-  useReactFlow,
   MiniMap,
   Controls,
   Background,
@@ -59,10 +58,6 @@ const App = () => {
   const [nodeInfoVar, setNodeInfoVar] = useState("");
   const [nodeVariables, setNodeVariables] = useState({});
   const [nodeExpressions, setNodeExpressions] = useState({});
-  const [processDefinitionKey, setProcessDefinitionKey] = useState(null);
-  const [processInstanceId, setProcessInstanceId] = useState(null);
-  const [deploying, setDeploying] = useState(false);
-  const [starting, setStarting] = useState(false);
   const [completedTasks, setCompletedTasks] = useState([]);
   const nodeCountsRef = useRef({
     sms: 0,
@@ -76,8 +71,11 @@ const App = () => {
 
   //Constants
   const EDGE_COLOR = "#b1b1b7";
+  const EDGE_COMPLETED_COLOR = "#4f46e5"; 
   const ARROW_SIZE = 16;
   const EDGE_SELECTED_COLOR = "#555";
+
+
 
   // Update nodes data when nodeName or selectedElements changes
   useEffect(() => {
@@ -106,47 +104,36 @@ const App = () => {
     }
   }, [nodeName, nodeInfo, nodeInfoVar, selectedElements, setNodes]);
 
-  // Fetch completed tasks when "Refresh Status" button is clicked
-  const fetchCompletedTasks = async () => {
-    if (!processInstanceId) return;
-    try {
-      const response = await fetch(
-        `${process.env.REACT_APP_FLOWABLE_BASE_URL}/monitorProcess/${processInstanceId}/completedTasks`
-      );
-      const completedTasks = await response.json();
-      setCompletedTasks(completedTasks);
-    } catch (error) {
-      console.error("Error fetching completed tasks: ", error);
-    }
-  };
-
   // Highlight completed nodes
   useEffect(() => {
     if (completedTasks.length > 0) {
-      setNodes((nds) =>
-        nds.map((node) => {
-          const isCompleted = completedTasks.some(
-            (task) => task.taskKey === node.id
-          );
+      const completedNodeIds = completedTasks.map(task => task.taskKey);
+
+      setEdges((eds) =>
+        eds.map((edge) => {
+          const isCompleted = completedNodeIds.includes(edge.source) && completedNodeIds.includes(edge.target);
           return {
-            ...node,
-            data: {
-              ...node.data,
-              completed: isCompleted,
-            },
+            ...edge,
             style: {
-              ...node.style,
-              boxShadow: isCompleted ? "0 4px 8px rgba(0, 128, 0, 0.6)" : "",
-              backgroundColor: isCompleted ? "#d4f4dd" : "",
+              ...edge.style,
+              stroke: isCompleted ? EDGE_COMPLETED_COLOR : EDGE_COLOR,
+              transition: "all 0.3s ease",
+              opacity: isCompleted ? 1 : 0.5,
+            },
+            animated: isCompleted,
+            markerEnd: {
+              ...edge.markerEnd,
+              color: isCompleted ? EDGE_COMPLETED_COLOR : EDGE_COLOR,
             },
           };
         })
       );
     }
-  }, [completedTasks, setNodes]);
-
+  }, [completedTasks, setNodes, setEdges]);
+  
   // Handle node click
   const onNodeClick = useCallback((event, node) => {
+    
     setSelectedElements([node]);
     setNodeName(node.data.label);
     setNodeInfo(node.data.info);
@@ -163,55 +150,6 @@ const App = () => {
 
   // Setup viewport
   // const { setViewport } = useReactFlow();
-
-  const startProcess = async () => {
-    console.log("Process Definition Key ----> ", processDefinitionKey);
-
-    if (processDefinitionKey) {
-      setStarting(true);
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_FLOWABLE_BASE_URL}/startProcess`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/xml",
-            },
-            body: JSON.stringify({ processKey: processDefinitionKey }),
-          }
-        );
-
-        if (!response.ok) {
-          alert("Error Starting the Process");
-        }
-
-        const responseObj = await response.json();
-
-        console.log("Response ----> ", responseObj);
-
-        if (!responseObj?.processInstanceId) {
-          alert("Process Instance not found. Restart!!!");
-        }
-
-        console.log(
-          "Process instance Id ----> ",
-          responseObj.processInstanceId
-        );
-
-        alert(
-          `Process started - instance id : ${responseObj.processInstanceId}`
-        );
-
-        setProcessInstanceId(responseObj.processInstanceId);
-        setStarting(false);
-      } catch (error) {
-        setStarting(false);
-        console.log(`Error! status: ${error}`);
-      }
-    } else {
-      alert("Process deployment key is null. Redeploy!!!");
-    }
-  };
 
   // Handle edge connection
   const onConnect = useCallback(
@@ -373,7 +311,12 @@ const App = () => {
           <Controls />
           <MiniMap zoomable pannable />
           <Panel>
-            <ToolBar nodes={nodes} edges={edges} />
+            <ToolBar
+              nodes={nodes}
+              edges={edges}
+              completedTasks={completedTasks}
+              setCompletedTasks={setCompletedTasks}
+            />
           </Panel>
         </ReactFlow>
       </div>

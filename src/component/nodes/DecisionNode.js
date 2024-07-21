@@ -5,7 +5,7 @@ function DecisionNode({ data, selected }) {
   return (
     <>
       <div
-        className={`relative shadow-xl flex items-center justify-center bg-white w-10 h-10 text-center border border-gray-500 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 transform rotate-45 ${
+        className={`relative shadow-xl flex items-center justify-center bg-white w-10 h-10 text-center border border-amber-500 rounded-lg transition-all duration-200 ease-in-out transform hover:scale-105 transform rotate-45 ${
           selected ? "border-solid border-2 border-indigo-500" : ""
         }`}
       >

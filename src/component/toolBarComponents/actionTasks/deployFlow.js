@@ -1,7 +1,15 @@
 import React, { useCallback } from "react";
 import { GrDeploy } from "react-icons/gr";
+import { ImSpinner9 } from "react-icons/im";
 
-const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
+const DeployFlow = ({
+  nodes,
+  edges,
+  collapse,
+  deploying,
+  setDeploying,
+  setProcessDefinitionKey,
+}) => {
   const checkEmptyTargetHandles = () => {
     let emptyTargetHandles = 0;
     edges.forEach((edge) => {
@@ -55,9 +63,9 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       visited.add(nodeId);
 
       const node = nodeMap.get(nodeId);
-      console.log("Node Map ----- > ",nodeMap);
+      console.log("Node Map ----- > ", nodeMap);
       const nodeType = getNodeType(node.type);
-      console.log("Node type ----> ",node.data.nodeType)
+      console.log("Node type ----> ", node.data.nodeType);
       const nodeMethod = getNodeMethod(node.data.nodeType);
       const nextEdges = edgeMap.get(nodeId) || [];
 
@@ -174,15 +182,15 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
     return bpmnXml;
   };
 
-  const downloadXml = (bpmnXml) => {
-    const blob = new Blob([bpmnXml], { type: "application/xml" });
-    const link = document.createElement("a");
-    link.download = "flow.bpmn";
-    link.href = URL.createObjectURL(blob);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  // const downloadXml = (bpmnXml) => {
+  //   const blob = new Blob([bpmnXml], { type: "application/xml" });
+  //   const link = document.createElement("a");
+  //   link.download = "flow.bpmn";
+  //   link.href = URL.createObjectURL(blob);
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // };
 
   const getNodeMethod = (nodeType) => {
     switch (nodeType) {
@@ -250,22 +258,27 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
       );
       return;
     } else {
+      setDeploying(true);
       const bpmnXml = convertToBPMN(nodes, edges);
 
       if (!bpmnXml) {
         console.error("BPMN XML generation failed");
+        setDeploying(false);
         return;
       }
 
       // Deploy xml to flowable
       try {
-        const response = await fetch(`${process.env.REACT_APP_FLOWABLE_BASE_URL}/deployProcess`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/xml",
-          },
-          body: bpmnXml,
-        });
+        const response = await fetch(
+          `${process.env.REACT_APP_FLOWABLE_BASE_URL}/deployProcess`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/xml",
+            },
+            body: bpmnXml,
+          }
+        );
 
         if (!response.ok) {
           console.log(`Error! status: ${response.status}`);
@@ -275,31 +288,44 @@ const DeployFlow = ({ nodes, edges, collapse, setProcessDefinitionKey }) => {
 
         if (!responseObj?.processDefinitionKey) {
           alert("Error: Process Deployment Failed!!!");
+          setDeploying(false);
           return;
         }
 
-        console.log("Process Definition Key ----> ", responseObj.processDefinitionKey);
+        console.log(
+          "Process Definition Key ----> ",
+          responseObj.processDefinitionKey
+        );
 
-        alert(`Process Deployed - deployment key : ${responseObj.processDefinitionKey}`);
+        alert(
+          `Process Deployed - deployment key : ${responseObj.processDefinitionKey}`
+        );
 
         setProcessDefinitionKey(responseObj.processDefinitionKey);
+        setDeploying(false);
       } catch (error) {
         console.error("Error during deployment ----> ", error);
+        setDeploying(false);
         alert("Error: Process Deployment Failed!!!");
       }
 
-      downloadXml(bpmnXml);
+      //downloadXml(bpmnXml);
     }
   };
 
   return (
     <div
-      className={`p-2 text-gray-500 border-2 border-gray-500 bg-gray-50 rounded-full hover:text-indigo-500 hover:border-indigo-500 hover:scale-110 transition-all duration-300 ease-in-out  ${
+      className={`p-2 text-gray-500 border-2 border-gray-500 bg-gray-50 rounded-full hover:text-indigo-500 hover:border-indigo-500 hover:scale-110 transition-all duration-300 ease-in-out ${
         collapse ? "hidden" : ""
-      }`}
-      title="Deploy Flow"
+      } ${deploying ? "cursor-not-allowed" : "cursor-pointer"}`}
+      title={deploying ? "Deploying..." : "Deploy Flow"}
+      onClick={deploying ? null : handleDeploy}
     >
-      <GrDeploy className="text-xl" onClick={handleDeploy} />
+      {deploying ? (
+        <ImSpinner9 className="text-xl animate-spin text-indigo-500" />
+      ) : (
+        <GrDeploy className="text-xl" />
+      )}
     </div>
   );
 };
