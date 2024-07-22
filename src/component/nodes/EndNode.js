@@ -11,7 +11,9 @@ function EndNode({ data, selected }) {
         }`}
       >
          <IoStopOutline
-          className="text-red-500 text-2xl" 
+          className={`${
+            selected ? "text-red-600 text-2xl" : "text-red-500 text-2xl"
+          }`}
         />
       </div>
       <Handle

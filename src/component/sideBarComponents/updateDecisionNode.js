@@ -22,7 +22,9 @@ export default function UpdateDecisionNode({
   });
   const [addExpression, setAddExpression] = useState(false);
   const [editExpression, setEditExpression] = useState(false);
-  const [decisionNode,setDecisionNode] = useState(selectedNode.data.decisionNode);
+  const [decisionNode, setDecisionNode] = useState(
+    selectedNode.data.decisionNode
+  );
 
   const handleExpressionNameChange = (event) => {
     setExpression((prev) => ({ ...prev, name: event.value }));
@@ -111,19 +113,9 @@ export default function UpdateDecisionNode({
     );
   };
 
-  const options = nodes
-    .filter(
-      (node) =>
-        node.type !== "start" && node.type !== "end" && node.type !== "decision"
-    )
-    .map((node) => ({
-      value: node.id,
-      label: node.data?.name,
-    }));
-
   const handleSelectChange = (event) => {
     setDecisionNode(event);
-    setExpression({name: "", condition: "", value: "",});
+    setExpression({ name: "", condition: "", value: "" });
     setNodeExpressions({});
     setNodes((nds) =>
       nds.map((node) => {
@@ -132,88 +124,117 @@ export default function UpdateDecisionNode({
             ...node,
             data: {
               ...node.data,
-              decisionNode : event,
-              expressions : {}
+              decisionNode: event,
+              expressions: {},
             },
           };
         }
         return node;
       })
     );
-  }
+  };
 
   const conditionOptions = [
     { value: "==", label: "==" },
     { value: "!=", label: "!=" },
-  ];  
+  ];
 
   const getExpressionOptions = () => {
-    let nodeType = decisionNode?.label ? decisionNode.label.split('#')[0] : '';
+    let nodeType = decisionNode?.label ? decisionNode.label.split("#")[0] : "";
 
-    switch(nodeType){
+    switch (nodeType) {
       case "sms":
       case "whatsapp":
-        return [
-          {value: "messageStatus", label: "messageStatus"}
-        ];
+        return [{ value: "messageStatus", label: "messageStatus" }];
       case "email":
-        return [
-          {value: "emailStatus", label: "emailStatus"}
-        ];
+        return [{ value: "emailStatus", label: "emailStatus" }];
       case "teleCall":
       case "botCall":
-        return [
-          {value: "callStatus", label: "callStatus"}
-        ];
+        return [{ value: "callStatus", label: "callStatus" }];
       case "wait":
-        return [
-          {value: "paymentStatus", label: "paymentStatus"}
-        ];
+        return [{ value: "paymentStatus", label: "paymentStatus" }];
       default:
-        return [
-          {value: "status", label: "status"}
-        ]
+        return [{ value: "status", label: "status" }];
     }
-  }
+  };
 
   const getStatusOptions = () => {
-    let nodeType = decisionNode?.label ? decisionNode.label.split('#')[0] : '';
+    let nodeType = decisionNode?.label ? decisionNode.label.split("#")[0] : "";
 
-    switch(nodeType){
+    switch (nodeType) {
       case "sms":
         return [
-          {value: "Delivered", label: "Delivered"},
-          {value: "Failed", label: "Failed"}
+          { value: "Delivered", label: "Delivered" },
+          { value: "Failed", label: "Failed" },
         ];
       case "whatsapp":
         return [
-          {value: "Delivered", label: "Delivered"},
-          {value: "Read", label: "Read"},
-          {value: "Failed", label: "Failed"}
+          { value: "Delivered", label: "Delivered" },
+          { value: "Read", label: "Read" },
+          { value: "Failed", label: "Failed" },
         ];
       case "email":
         return [
-          {value: "Sent", label: "Sent"},
-          {value: "Failed", label: "Failed"}
+          { value: "Sent", label: "Sent" },
+          { value: "Failed", label: "Failed" },
         ];
       case "botCall":
       case "teleCall":
         return [
-          {value: "Answered", label: "Answered"},
-          {value: "Wrong Number", label: "Wrong Number"},
-          {value: "No Response", label: "No Response"}
+          { value: "Answered", label: "Answered" },
+          { value: "Wrong Number", label: "Wrong Number" },
+          { value: "No Response", label: "No Response" },
         ];
       case "wait":
         return [
-          {value: "Received", label: "Received"},
-          {value: "Not Received", label: "Not Received"}
+          { value: "Received", label: "Received" },
+          { value: "Not Received", label: "Not Received" },
         ];
       default:
-        return [
-          {value: "status", label: "status"}
-        ]
+        return [{ value: "status", label: "status" }];
     }
-  }
+  };
+
+  const getPrecedingNodes = () => {
+    const visited = new Set();
+    const queue = [];
+
+    const startNode = nodes.find((node) => node.type === "start");
+    if (!startNode) return [];
+
+    queue.push(startNode.id);
+    visited.add(startNode.id);
+
+    let precedingNodes = [];
+
+    while (queue.length > 0) {
+      const currentNodeId = queue.shift();
+      const currentNode = nodes.find((node) => node.id === currentNodeId);
+
+      precedingNodes.push(currentNode);
+
+      edges.forEach((edge) => {
+        if (edge.source === currentNodeId && !visited.has(edge.target)) {
+          queue.push(edge.target);
+          visited.add(edge.target);
+        }
+      });
+
+      if (currentNodeId === selectedNode.id) break;
+    }
+
+    precedingNodes = precedingNodes.filter(
+      (node) =>
+        (node.type !== "start" && node.type !== "end" && node.type !== "decision")
+    );
+
+    return precedingNodes
+      .filter((node) => node.id !== selectedNode.id && node.type !== "decision")
+      .map((node) => ({
+        value: node.id,
+        label: node.data?.name,
+      }));
+  };
 
   return (
     <div>
@@ -223,62 +244,64 @@ export default function UpdateDecisionNode({
       <div className="p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
         <p className="font-medium text-gray-800">Select Node</p>
         <Select
-          options={options}
+          options={getPrecedingNodes()}
           placeholder="Select Node"
           className="basic-single"
           classNamePrefix="select"
           value={decisionNode}
           onChange={(event) => {
-            handleSelectChange(event)
+            handleSelectChange(event);
           }}
         />
       </div>
-      {(Object.keys(decisionNode).length !== 0) && <div className="mt-4 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
-        <p className="font-medium text-gray-800">Expressions</p>
-        {Object.keys(nodeExpressions).length > 0 && (
-          <div className="relative space-y-2 bg-inherit rounded-lg w-full">
-            {Object.entries(nodeExpressions).map(([key, value]) => (
-              <div key={key} className="relative flex items-center">
-                <h1
-                  onClick={() => {
-                    setAddExpression(false);
-                    setEditExpression(true);
-                    setExpression({
-                      name: key.split('$')[1],
-                      condition: value.condition,
-                      value: value.value,
-                    });
-                  }}
-                  className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
-                >
-                  {key.split('$')[1]}
-                </h1>
-                <FaTrashAlt
-                  id={key}
-                  className="text-gray-500 hover:text-red-500 ml-2 cursor-pointer"
-                  onClick={() => handleDeleteExpression(key)}
-                />
-              </div>
-            ))}
+      {Object.keys(decisionNode).length !== 0 && (
+        <div className="mt-4 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
+          <p className="font-medium text-gray-800">Expressions</p>
+          {Object.keys(nodeExpressions).length > 0 && (
+            <div className="relative space-y-2 bg-inherit rounded-lg w-full">
+              {Object.entries(nodeExpressions).map(([key, value]) => (
+                <div key={key} className="relative flex items-center">
+                  <h1
+                    onClick={() => {
+                      setAddExpression(false);
+                      setEditExpression(true);
+                      setExpression({
+                        name: key.split("$")[1],
+                        condition: value.condition,
+                        value: value.value,
+                      });
+                    }}
+                    className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
+                  >
+                    {key.split("$")[1]}
+                  </h1>
+                  <FaTrashAlt
+                    id={key}
+                    className="text-gray-500 hover:text-red-500 ml-2 cursor-pointer"
+                    onClick={() => handleDeleteExpression(key)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-col justify-center">
+            <button
+              className={`bg-white font-semibold border rounded-md border-dashed p-1 ${
+                addExpression || editExpression
+                  ? "border-gray-600 text-gray-600 cursor-not-allowed"
+                  : "border-blue-500 text-blue-500 hover:bg-blue-50"
+              }`}
+              disabled={addExpression || editExpression}
+              onClick={() => {
+                setAddExpression(true);
+                setExpression({ name: "", condition: "", value: "" });
+              }}
+            >
+              New Expression +
+            </button>
           </div>
-        )}
-        <div className="flex flex-col justify-center">
-          <button
-            className={`bg-white font-semibold border rounded-md border-dashed p-1 ${
-              addExpression || editExpression
-                ? "border-gray-600 text-gray-600 cursor-not-allowed"
-                : "border-blue-500 text-blue-500 hover:bg-blue-50"
-            }`}
-            disabled={addExpression || editExpression}
-            onClick={() => {
-              setAddExpression(true);
-              setExpression({ name: "", condition: "", value: "" });
-            }}
-          >
-            New Expression +
-          </button>
         </div>
-      </div>}
+      )}
       {(addExpression || editExpression) && (
         <div className="mt-6 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400">
           <p className="font-medium w-auto h-auto text-gray-800">
@@ -295,7 +318,7 @@ export default function UpdateDecisionNode({
             </div>
             <Select
               isDisabled={editExpression}
-              value={{value: expression.name, label: expression.name}}
+              value={{ value: expression.name, label: expression.name }}
               onChange={handleExpressionNameChange}
               options={getExpressionOptions()}
             />
@@ -310,7 +333,10 @@ export default function UpdateDecisionNode({
               </span>
             </div>
             <Select
-              value={{value: expression.condition, label: expression.condition}}
+              value={{
+                value: expression.condition,
+                label: expression.condition,
+              }}
               onChange={handleExpressionConditionChange}
               options={conditionOptions}
             />
@@ -325,7 +351,7 @@ export default function UpdateDecisionNode({
               </span>
             </div>
             <Select
-              value={{value: expression.value,  label : expression.value}}
+              value={{ value: expression.value, label: expression.value }}
               onChange={handleExpressionValueChange}
               options={getStatusOptions()}
             />

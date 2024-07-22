@@ -68,15 +68,12 @@ const App = () => {
     teleCall: 0,
     wait: 0,
   });
-  const [errorMessage, setErrorMessage] = useState("Error: Something went wrong!"); 
 
   //Constants
   const EDGE_COLOR = "#b1b1b7";
-  const EDGE_COMPLETED_COLOR = "#4f46e5"; 
+  const EDGE_COMPLETED_COLOR = "#4f46e5";
   const ARROW_SIZE = 16;
   const EDGE_SELECTED_COLOR = "#555";
-
-
 
   // Update nodes data when nodeName or selectedElements changes
   useEffect(() => {
@@ -108,11 +105,13 @@ const App = () => {
   // Highlight completed nodes
   useEffect(() => {
     if (completedTasks.length > 0) {
-      const completedNodeIds = completedTasks.map(task => task.taskKey);
+      const completedNodeIds = completedTasks.map((task) => task.taskKey);
 
       setEdges((eds) =>
         eds.map((edge) => {
-          const isCompleted = completedNodeIds.includes(edge.source) && completedNodeIds.includes(edge.target);
+          const isCompleted =
+            completedNodeIds.includes(edge.source) &&
+            completedNodeIds.includes(edge.target);
           return {
             ...edge,
             style: {
@@ -131,10 +130,9 @@ const App = () => {
       );
     }
   }, [completedTasks, setNodes, setEdges]);
-  
+
   // Handle node click
   const onNodeClick = useCallback((event, node) => {
-    
     setSelectedElements([node]);
     setNodeName(node.data.label);
     setNodeInfo(node.data.info);
@@ -261,6 +259,38 @@ const App = () => {
     backgroundColor: "#ffffff",
   };
 
+  // Handle pane click
+  const onPaneClick = () => {
+    setSelectedElements([]);
+    setNodes((nodes) =>
+      nodes.map((n) => ({
+        ...n,
+        selected: false,
+      }))
+    );
+
+    setEdges((eds) =>
+      eds.map((e) => {
+        const isCompleted =
+          completedTasks.map((task) => task.taskKey).includes(e.source) &&
+          completedTasks.map((task) => task.taskKey).includes(e.target);
+        return {
+          ...e,
+          selected: false,
+          style: {
+            ...e.style,
+            stroke: isCompleted ? EDGE_COMPLETED_COLOR : EDGE_COLOR,
+            opacity: isCompleted ? 1 : 0.5,
+          },
+          markerEnd: {
+            ...e.markerEnd,
+            color: isCompleted ? EDGE_COMPLETED_COLOR : EDGE_COLOR,
+          },
+        };
+      })
+    );
+  };
+
   return (
     <div className="flex flex-row min-h-screen lg:flex-row">
       <div className="flex-grow h-screen" ref={reactFlowWrapper}>
@@ -278,30 +308,7 @@ const App = () => {
           onDragOver={onDragOver}
           style={rfStyle}
           onNodeClick={onNodeClick}
-          onPaneClick={() => {
-            setSelectedElements([]);
-            setNodes((nodes) =>
-              nodes.map((n) => ({
-                ...n,
-                selected: false,
-              }))
-            );
-
-            setEdges((eds) =>
-              eds.map((e) => ({
-                ...e,
-                selected: false,
-                style: {
-                  ...e.style,
-                  stroke: EDGE_COLOR,
-                },
-                markerEnd: {
-                  ...e.markerEnd,
-                  color: EDGE_COLOR,
-                },
-              }))
-            );
-          }}
+          onPaneClick={onPaneClick}
           fitView
           proOptions={{ hideAttribution: true }}
           snapToGrid={true}

@@ -26,10 +26,6 @@ const DeployFlow = ({
   };
 
   const convertToBPMN = (nodes, edges) => {
-    if (nodes.length === 0 || edges.length === 0) {
-      console.error("Nodes or edges are undefined or empty");
-      return;
-    }
 
     let pdKey = generateProcessDefinitionKey();
 
@@ -182,15 +178,15 @@ const DeployFlow = ({
     return bpmnXml;
   };
 
-  const downloadXml = (bpmnXml) => {
-    const blob = new Blob([bpmnXml], { type: "application/xml" });
-    const link = document.createElement("a");
-    link.download = "flow.bpmn";
-    link.href = URL.createObjectURL(blob);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
+  // const downloadXml = (bpmnXml) => {
+  //   const blob = new Blob([bpmnXml], { type: "application/xml" });
+  //   const link = document.createElement("a");
+  //   link.download = "flow.bpmn";
+  //   link.href = URL.createObjectURL(blob);
+  //   document.body.appendChild(link);
+  //   link.click();
+  //   document.body.removeChild(link);
+  // };
 
   const getNodeMethod = (nodeType) => {
     switch (nodeType) {
@@ -247,11 +243,30 @@ const DeployFlow = ({
   const handleDeploy = async () => {
     const emptyTargetHandles = checkEmptyTargetHandles();
 
+    //Should not procced if the flow is blank
     if (nodes.length === 0 || edges.length === 0) {
       alert("Error: Not a valid flow");
       return;
     }
 
+    //Check if the flow has multiple start nodes
+    const startNodes = nodes.filter((node) => node.type === "start");
+    if (startNodes.length > 1) {
+      alert("Error: Not a valid flow (Multiple Start Nodes)");
+      return;
+    }
+
+    //Check if all the decision nodes have expressions
+    const emptyExpressionNodes = nodes
+    .filter((node) => node.type === "decision")
+    .filter((node) => Object.keys(node.data.expressions).length === 0);
+
+    if(emptyExpressionNodes.length !== 0){
+      alert("Error: One or more decision nodes are missing expressions.");
+      return;
+    }
+     
+    //Check for unconnected nodes
     if (nodes.length > 1 && (emptyTargetHandles > 1 || isNodeUnconnected())) {
       alert(
         "Error: More than one node has an empty target handle or there are unconnected nodes."
