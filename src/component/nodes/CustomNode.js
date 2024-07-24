@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Handle, Position } from "reactflow";
 import {
   FaWhatsapp,
@@ -9,7 +9,7 @@ import {
   FaPhoneAlt,
 } from "react-icons/fa";
 
-function CustomNode({ data, selected }) {
+function CustomNode({ data, selected, id }) {
   const nodeTypes = {
     message: {
       icon: <FaCommentDots />,
@@ -39,16 +39,55 @@ function CustomNode({ data, selected }) {
     },
   };
 
+  const getStatusOptions = (nodeType) => {
+    switch (nodeType) {
+      case "sms":
+        return ["Delivered", "Failed"];
+      case "whatsapp":
+        return ["Delivered", "Read", "Failed"];
+      case "email":
+        return ["Sent", "Failed"];
+      case "botCall":
+      case "teleCall":
+        return ["Answered", "Wrong Number", "No Response"];
+      case "wait":
+        return ["Received", "Not Received"];
+      case "fieldAgent":
+        return ["Assigned", "Pending", "Completed"];
+      default:
+        return ["status"];
+    }
+  };
+
+  const options = getStatusOptions(data.nodeType);
+
   const { icon, label, bgColor } =
     nodeTypes[data.nodeType] || nodeTypes.message;
 
+  const [hideStatus, setHideStatus] = useState(false);
+  const [animateStatus, setAnimateStatus] = useState(false);
+
+  useEffect(() => {
+    if (!hideStatus) {
+      setTimeout(() => setAnimateStatus(true), 50);
+    }
+  }, [hideStatus]);
+
+  const handleNodeClick = (status) => {
+    setAnimateStatus(false);
+    setTimeout(() => setHideStatus(true), 300);
+    if(data.onStatusChange){
+      data.onStatusChange(id,status,data.position,data.nodeType);
+    }
+  };
+
   return (
     <div
-      className={`w-40 shadow-xl rounded-md bg-white ${
-        selected ? "border-solid border-2 rounded-md border-indigo-500" : ""
+      className={`relative w-40 shadow-xl rounded-md bg-white ${
+        selected ? "border-solid border-2 rounded-lg border-indigo-500" : ""
       }`}
     >
-      <div className="flex flex-col border rounded-lg shadow-lg overflow-hidden bg-white transition-all duration-200">
+      <div className="flex flex-col border rounded-md shadow-lg overflow-hidden bg-white transition-all duration-200">
         <div
           className={`flex justify-center items-center max-h-max px-2 py-1 text-center text-black text-xs font-bold rounded-t-md ${bgColor}`}
         >
@@ -65,18 +104,46 @@ function CustomNode({ data, selected }) {
         </div>
       </div>
 
-      <Handle
-        id="a"
-        type="target"
-        position={Position.Left}
-        className="w-1 rounded-full bg-slate-500"
-      />
-      <Handle
-        id="b"
-        type="source"
-        position={Position.Right}
-        className="w-1 rounded-full bg-gray-500"
-      />
+    
+        <>
+          <Handle
+            id="a"
+            type="target"
+            position={Position.Left}
+            className="w-2 h-2 rounded-full bg-slate-500"
+          />
+          <Handle
+            id="b"
+            type="source"
+            position={Position.Right}
+            className="w-2 h-2 rounded-full bg-gray-500"
+          />
+        </>
+      
+      {!hideStatus && (
+        <div className="absolute -inset-y-4 left-48 bg-black-200 w-10 h-10 flex flex-col space-y-4">
+          {options.map((status, index) => (
+            <div
+              key={`${index}`}
+              className={`
+                p-1 w-24 rounded-md text-center bg-gray-100 text-wrap 
+                hover:cursor-pointer hover:border hover:border-gray-600 hover:scale-105 
+                text-gray-500 hover:text-gray-600 
+                transition-all duration-300 ease-in-out
+                transform ${
+                  animateStatus
+                    ? "translate-x-0 opacity-100"
+                    : "translate-x-full opacity-0"
+                }
+              `}
+              style={{ transitionDelay: `${index * 100}ms` }}
+              onClick={() => handleNodeClick(status)}
+            >
+              <p className="">{status}</p>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

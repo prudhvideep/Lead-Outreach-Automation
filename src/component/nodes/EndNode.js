@@ -20,7 +20,7 @@ function EndNode({ data, selected }) {
         id="a"
         type="target"
         position={Position.Left}
-        className="w-1 rounded-full bg-slate-500"
+        className="w-2 h-2 rounded-full bg-slate-500"
       />
     </>
   );

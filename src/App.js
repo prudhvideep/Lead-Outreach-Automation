@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import ReactFlow, {
   ReactFlowProvider,
   addEdge,
@@ -23,20 +29,6 @@ import DecisionNode from "./component/nodes/DecisionNode.js";
 
 // Key for local storage
 //const flowKey = "flow-key";
-
-// Define nodeTypes outside the component
-const nodeTypes = {
-  email: CustomNode,
-  sms: CustomNode,
-  whatsapp: CustomNode,
-  botCall: CustomNode,
-  fieldAgent: CustomNode,
-  teleCall: CustomNode,
-  start: StartNode,
-  end: EndNode,
-  wait: WaitNode,
-  decision: DecisionNode,
-};
 
 // Initial node setup
 const initialNodes = [];
@@ -68,6 +60,22 @@ const App = () => {
     teleCall: 0,
     wait: 0,
   });
+
+  const nodeTypes = useMemo(
+    () => ({
+      email: CustomNode,
+      sms: CustomNode,
+      whatsapp: CustomNode,
+      botCall: CustomNode,
+      fieldAgent: CustomNode,
+      teleCall: CustomNode,
+      start: StartNode,
+      end: EndNode,
+      wait: WaitNode,
+      decision: DecisionNode,
+    }),
+    []
+  );
 
   //Constants
   const EDGE_COLOR = "#b1b1b7";
@@ -155,6 +163,7 @@ const App = () => {
     (params) => {
       console.log("Edge created: ", params);
       setEdges((eds) => addEdge(params, eds));
+      console.log("Edges ----> ", edges);
     },
     [setEdges]
   );
@@ -207,6 +216,114 @@ const App = () => {
     event.dataTransfer.dropEffect = "move";
   }, []);
 
+  const getExpressionOptions = (nodeType) => {
+
+    switch (nodeType) {
+      case "sms":
+      case "whatsapp":
+        return  "messageStatus";
+      case "email":
+        return "emailStatus";
+      case "teleCall":
+      case "botCall":
+        return "callStatus";
+      case "wait":
+        return "paymentStatus" ;
+      default:
+        return "status" ;
+    }
+  };
+
+  const handleStatusChange = useCallback(
+    (nodeId, status, position, nodeType) => {
+      console.log("Node id ---->", nodeId);
+      console.log("status ---> ", status);
+      console.log("Position ----> ", position);
+      console.log("Node Type ----> ", nodeType);
+
+      if (reactFlowInstance) {
+        const screenPosition = reactFlowInstance.project(position);
+        const offsetX = 300;
+        const offsetY = 300;
+
+        const newScreenPosition = {
+          x: screenPosition.x + offsetX,
+          y: screenPosition.y + offsetY,
+        };
+
+        const decisionNodePosition =
+          reactFlowInstance.screenToFlowPosition(newScreenPosition);
+
+        const newNodeType = "decision";
+        const newNodeId = getId();
+        const newDecisionNode = {
+          id: newNodeId,
+          type: newNodeType,
+          nodeActionType: "control",
+          position: decisionNodePosition,
+          data: {
+            name: `${getNodeName(newNodeType)}`,
+            label: `${newNodeType}`,
+            status: "",
+            nodeType: newNodeType,
+            info: "",
+            infoVar: "",
+            decisionNode: {},
+            variables: {},
+            onStatusChange: handleStatusChange,
+            position: decisionNodePosition,
+            decisionNode: nodeId,
+            expressions: {
+            [`${nodeId}$${getExpressionOptions(nodeType)}`]: {
+              condition: `==`,
+              value: status,
+            }
+          }
+          },
+        };
+
+        console.log("Node created: ", newDecisionNode);
+        setNodes((nds) => nds.concat(newDecisionNode));
+
+        console.log("Edges ----> ", edges);
+
+        const newEdge = {
+          type: "smoothstep",
+          animated: false,
+          style: {
+            stroke: "#b1b1b7",
+            transition: "stroke 0.3s ease",
+          },
+          markerEnd: {
+            type: "arrow",
+            width: 16,
+            height: 16,
+            color: "#b1b1b7",
+            strokeWidth: 2,
+            markerUnits: "strokeWidth",
+            orient: "auto",
+          },
+          source: nodeId,
+          sourceHandle: "b",
+          target: newNodeId,
+          targetHandle: "a",
+        };
+
+        setEdges((eds) => addEdge(newEdge, eds));
+      } else {
+        console.error("React Flow instance is not available");
+      }
+    },
+    [reactFlowInstance, setNodes]
+  );
+
+  const getNodeName = (nodeType) => {
+    nodeCountsRef.current[nodeType] =
+      (nodeCountsRef.current[nodeType] || 0) + 1;
+    const count = nodeCountsRef.current[nodeType];
+    return `${nodeType}#${count}`;
+  };
+
   // Handle drop event to add a new node
   const onDrop = useCallback(
     (event) => {
@@ -225,13 +342,6 @@ const App = () => {
         y: event.clientY,
       });
 
-      const getNodeName = (nodeType) => {
-        nodeCountsRef.current[nodeType] =
-          (nodeCountsRef.current[nodeType] || 0) + 1;
-        const count = nodeCountsRef.current[nodeType];
-        return `${nodeType}#${count}`;
-      };
-
       const newNode = {
         id: getId(),
         type: `${type}`,
@@ -240,12 +350,15 @@ const App = () => {
         data: {
           name: `${getNodeName(type)}`,
           label: `${type}`,
+          status: "",
           nodeType: type,
           info: "",
           infoVar: "",
           decisionNode: {},
           variables: {},
           expressions: {},
+          onStatusChange: handleStatusChange,
+          position: position,
         },
       };
 

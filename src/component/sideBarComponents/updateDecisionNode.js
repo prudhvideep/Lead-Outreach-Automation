@@ -113,26 +113,6 @@ export default function UpdateDecisionNode({
     );
   };
 
-  const handleSelectChange = (event) => {
-    setDecisionNode(event);
-    setExpression({ name: "", condition: "", value: "" });
-    setNodeExpressions({});
-    setNodes((nds) =>
-      nds.map((node) => {
-        if (node.id === selectedNode.id) {
-          return {
-            ...node,
-            data: {
-              ...node.data,
-              decisionNode: event,
-              expressions: {},
-            },
-          };
-        }
-        return node;
-      })
-    );
-  };
 
   const conditionOptions = [
     { value: "==", label: "==" },
@@ -140,7 +120,7 @@ export default function UpdateDecisionNode({
   ];
 
   const getExpressionOptions = () => {
-    let nodeType = decisionNode?.label ? decisionNode.label.split("#")[0] : "";
+    let nodeType = decisionNode?.label ? decisionNode.label.split("$")[0] : "";
 
     switch (nodeType) {
       case "sms":
@@ -195,65 +175,12 @@ export default function UpdateDecisionNode({
     }
   };
 
-  const getPrecedingNodes = () => {
-    const visited = new Set();
-    const queue = [];
-
-    const startNode = nodes.find((node) => node.type === "start");
-    if (!startNode) return [];
-
-    queue.push(startNode.id);
-    visited.add(startNode.id);
-
-    let precedingNodes = [];
-
-    while (queue.length > 0) {
-      const currentNodeId = queue.shift();
-      const currentNode = nodes.find((node) => node.id === currentNodeId);
-
-      precedingNodes.push(currentNode);
-
-      edges.forEach((edge) => {
-        if (edge.source === currentNodeId && !visited.has(edge.target)) {
-          queue.push(edge.target);
-          visited.add(edge.target);
-        }
-      });
-
-      if (currentNodeId === selectedNode.id) break;
-    }
-
-    precedingNodes = precedingNodes.filter(
-      (node) =>
-        (node.type !== "start" && node.type !== "end" && node.type !== "decision")
-    );
-
-    return precedingNodes
-      .filter((node) => node.id !== selectedNode.id && node.type !== "decision")
-      .map((node) => ({
-        value: node.id,
-        label: node.data?.name,
-      }));
-  };
 
   return (
     <div>
       <h3 className="text-xl mb-4 text-gray-800 font-semibold">
         Update Decision Node
       </h3>
-      <div className="p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
-        <p className="font-medium text-gray-800">Select Node</p>
-        <Select
-          options={getPrecedingNodes()}
-          placeholder="Select Node"
-          className="basic-single"
-          classNamePrefix="select"
-          value={decisionNode}
-          onChange={(event) => {
-            handleSelectChange(event);
-          }}
-        />
-      </div>
       {Object.keys(decisionNode).length !== 0 && (
         <div className="mt-4 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
           <p className="font-medium text-gray-800">Expressions</p>
@@ -273,6 +200,7 @@ export default function UpdateDecisionNode({
                     }}
                     className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
                   >
+                    {console.log("Key ---> ",key)}
                     {key.split("$")[1]}
                   </h1>
                   <FaTrashAlt

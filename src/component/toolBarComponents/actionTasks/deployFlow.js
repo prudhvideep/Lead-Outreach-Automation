@@ -249,8 +249,13 @@ const DeployFlow = ({
       return;
     }
 
-    //Check if the flow has multiple start nodes
     const startNodes = nodes.filter((node) => node.type === "start");
+    if(startNodes.length === 0){
+      alert("Error: No Starting Point (Provide a Start Node)");
+      return;
+    }
+
+    //Check if the flow has multiple start nodes
     if (startNodes.length > 1) {
       alert("Error: Not a valid flow (Multiple Start Nodes)");
       return;
