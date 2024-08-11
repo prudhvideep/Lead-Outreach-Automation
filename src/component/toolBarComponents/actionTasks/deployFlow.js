@@ -107,17 +107,33 @@ const DeployFlow = ({
           });
         }
       } else {
-        bpmnXml += `
-        <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
-          node.id
-        }"/>
-        <${nodeType} id="${node.id}" name="${
-          node.data.label
-        }" flowable:class="${nodeMethod}">
-           ${generateFieldExtensions(node.data, nodeType)}
-          <incoming>flow_${flowCounter - 1}</incoming>
-          <outgoing>flow_${flowCounter}</outgoing>
-        </${nodeType}>`;
+        console.log("Node Type ---> ",node.type);
+        if(node.type === "sms" || node.type === "whatsapp"){
+          bpmnXml += `
+          <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
+            node.id
+          }"/>
+          <${nodeType} id="${node.id}" name="${
+            node.data.label
+          }" flowable:class="${nodeMethod}" flowable:async="true" flowable:triggerable="true">
+             ${generateFieldExtensions(node.data, nodeType)}
+            <incoming>flow_${flowCounter - 1}</incoming>
+            <outgoing>flow_${flowCounter}</outgoing>
+          </${nodeType}>`;
+
+        }else{
+          bpmnXml += `
+          <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
+            node.id
+          }"/>
+          <${nodeType} id="${node.id}" name="${
+            node.data.label
+          }" flowable:class="${nodeMethod}">
+             ${generateFieldExtensions(node.data, nodeType)}
+            <incoming>flow_${flowCounter - 1}</incoming>
+            <outgoing>flow_${flowCounter}</outgoing>
+          </${nodeType}>`;
+        }
       }
 
       nextEdges.forEach((edge) => {
@@ -178,15 +194,15 @@ const DeployFlow = ({
     return bpmnXml;
   };
 
-  // const downloadXml = (bpmnXml) => {
-  //   const blob = new Blob([bpmnXml], { type: "application/xml" });
-  //   const link = document.createElement("a");
-  //   link.download = "flow.bpmn";
-  //   link.href = URL.createObjectURL(blob);
-  //   document.body.appendChild(link);
-  //   link.click();
-  //   document.body.removeChild(link);
-  // };
+  const downloadXml = (bpmnXml) => {
+    const blob = new Blob([bpmnXml], { type: "application/xml" });
+    const link = document.createElement("a");
+    link.download = "flow.bpmn";
+    link.href = URL.createObjectURL(blob);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   const getNodeMethod = (nodeType) => {
     switch (nodeType) {
