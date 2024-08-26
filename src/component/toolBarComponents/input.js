@@ -14,24 +14,24 @@ const Input = ({flowName,setFlowName}) => {
         placeholder="Flow Name"
         disabled={!editable}
         onChange={(event) => {setFlowName(event.target.value)}}
-        className={`block ml-1 py-1.5 pl-4 pr-8 h-10 border-2 text-lg rounded-xl shadow-sm font-medium
+        className={`block mt-[2px] ml-1 py-1.5 pl-4 pr-8 h-8 border rounded-lg text-sm font-normal placeholder-gray-300 placeholder:text-sm focus:outline-none
           ${
             editable
-              ? "border-gray-400 text-black bg-white hover:border-gray-600"
-              : "border-gray-300 text-gray-600 bg-gray-50 cursor-not-allowed"
+              ? "border-gray-300 text-gray-200 bg-highlightedgray"
+              : "border-gray-700 text-gray-400 bg-highlightedgray cursor-not-allowed"
           }`}
       />
       <div className="absolute inset-y-1 right-2 flex items-center">
         {!editable && (
           <FaPen
             onClick={() => setEditable(true)}
-            className="text-gray-500 hover:text-indigo-500 hover:scale-110 font-thin text-md cursor-pointer"
+            className="text-gray-300 hover:text-gray-500 hover:scale-110 font-thin text-sm cursor-pointer"
           />
         )}
         {editable && (
           <MdOutlineDone
             onClick={() => setEditable(false)}
-            className="text-gray-500 hover:text-indigo-500 hover:scale-110 font-thin text-2xl cursor-pointer"
+            className="text-gray-300 hover:text-gray-500 hover:scale-110 font-thin text-lg cursor-pointer"
           />
         )}
       </div>

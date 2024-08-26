@@ -1,34 +1,107 @@
-import React from "react";
+import React, { useRef, useEffect } from "react";
 import { FaAngleRight, FaChevronDown } from "react-icons/fa";
+import ReactDOM from "react-dom";
 
-const NodeSection = ({ title, nodes, expanded, setExpanded, onDragStart, onDragEnd }) => (
-  <div className="p-4 mt-4 bg-gray-100 border rounded-xl">
-    <div className="flex items-center space-x-2 mb-4">
-      <button onClick={() => setExpanded(!expanded)}>
-        {expanded ? <FaChevronDown className="text-gray-600" /> : <FaAngleRight className="text-gray-600" />}
-      </button>
-      <h3 className="font-medium text-lg text-gray-700">{title}</h3>
-    </div>
-    
-    {expanded && (
-      <div className="space-y-3">
-        {nodes.map((node) => (
-          <div
-            key={node.type}
-            className={`flex items-center space-x-3 p-3 bg-white rounded-lg shadow-sm cursor-grab 
-                        hover:shadow-md transition-all duration-200 
-                        hover:bg-${node.color}-50 hover:border-${node.color}-${node.shade}`}
-            onDragStart={(event) => onDragStart(event, node.type, node.nodeActionType)}
-            onDragEnd={onDragEnd}
-            draggable
-          >
-            <div className={`text-${node.color}-${node.shade} text-xl`}>{node.icon}</div>
-            <span className="font-medium text-gray-700">{node.label}</span>
+const NodeSection = ({
+  title,
+  nodes,
+  expanded,
+  setExpanded,
+  onDragStart,
+  onDragEnd,
+}) => {
+  const dragItemsRef = useRef({});
+
+  useEffect(() => {
+    nodes.forEach((node) => {
+      const div = document.createElement("div");
+      div.className = "draggable-ghost";
+      div.style.pointerEvents = 'none';
+      document.body.appendChild(div);
+
+      ReactDOM.render(
+        <div className="p-2 w-32 flex items-center justify-center space-x-2 bg-black rounded-lg text-[8px]">
+          <div className={`text-${node.color}-${node.shade} text-sm `}>
+            {node.icon}
           </div>
-        ))}
+          <span className="text-xs font-normal text-gray-300">
+            {node.label}
+          </span>
+        </div>,
+        div
+      );
+
+      dragItemsRef.current[node.type] = div;
+    });
+
+    return () => {
+      Object.values(dragItemsRef.current).forEach((div) => {
+        ReactDOM.unmountComponentAtNode(div);
+        document.body.removeChild(div);
+      });
+    };
+  }, [nodes]);
+
+  const handleDragStart = (event, node) => {
+    const ghostElement = dragItemsRef.current[node.type];
+    if (ghostElement) {
+      event.dataTransfer.setDragImage(ghostElement, 1, 0);
+    }
+    onDragStart(event, node.type, node.nodeActionType);
+    event.target.style.opacity = "1";
+  };
+
+  const handleDragEnd = (event) => {
+    event.target.style.opacity = "1";
+    onDragEnd();
+  };
+
+  return (
+    <div
+      className={`mt-4 bg-customgray border border-gray-700 rounded-xl shadow-md`}
+    >
+      <div
+        className={`p-3 flex items-center space-x-2 hover:cursor-pointer hover:bg-highlightedgray ${
+          expanded ? "hover:rounded-t-xl" : "hover:rounded-xl"
+        } `}
+        onClick={() => setExpanded(!expanded)}
+      >
+        <button>
+          {expanded ? (
+            <FaChevronDown className="text-gray-300 text-[10px]" />
+          ) : (
+            <FaAngleRight className="text-gray-300 text-[10px]" />
+          )}
+        </button>
+        <h3 className="font-normal text-xs text-gray-300">{title}</h3>
       </div>
-    )}
-  </div>
-);
+
+      {expanded && (
+        <div
+          className={`transition-transform duration-300 ease-in-out ${
+            !expanded ? "hide" : ""
+          } p-2 grid grid-cols-2 grid-row-auto gap-3`}
+        >
+          {nodes.map((node) => (
+            <div
+              key={node.type}
+              className={`p-2 flex items-center justify-center space-x-2 bg-black rounded-lg shadow-sm cursor-grab text-[8px] outline outline-black hover:outline-blue-700 `}
+              onDragStart={(event) => handleDragStart(event, node)}
+              onDragEnd={handleDragEnd}
+              draggable
+            >
+              <div className={`text-${node.color}-${node.shade} text-sm`}>
+                {node.icon}
+              </div>
+              <span className="text-xs font-normal text-gray-300">
+                {node.label}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default NodeSection;

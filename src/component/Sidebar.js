@@ -3,7 +3,11 @@ import React, { useState } from "react";
 import { FiSidebar } from "react-icons/fi";
 import NodeSection from "./sideBarComponents/nodeSection";
 import NodeEditor from "./sideBarComponents/nodeEditor";
-import { autoNodeTypes, manualNodeTypes, controlNodesTypes } from "./sideBarComponents/nodeTypes";
+import {
+  autoNodeTypes,
+  manualNodeTypes,
+  controlNodesTypes,
+} from "./sideBarComponents/nodeTypes";
 
 export default function Sidebar({
   nodes,
@@ -24,9 +28,9 @@ export default function Sidebar({
   setSelectedElements,
 }) {
   const [sidebarExpand, setSidebarExpand] = useState(true);
-  const [autoNodesExpand, setAutoNodesExpand] = useState(false);
-  const [manualNodesExpand, setManualNodesExpand] = useState(false);
-  const [controlNodesExpand, setControlNodesExpand] = useState(false);
+  const [autoNodesExpand, setAutoNodesExpand] = useState(true);
+  const [manualNodesExpand, setManualNodesExpand] = useState(true);
+  const [controlNodesExpand, setControlNodesExpand] = useState(true);
 
   const onDragStart = (event, type, nodeActionType) => {
     const nodeObj = {
@@ -52,16 +56,26 @@ export default function Sidebar({
 
   return (
     <aside
-      className={`transition-all duration-300 ease-in-out border-r-2 border-gray-400 p-4 text-sm bg-gradient-to-b from-gray-50 to-white h-screen text-gray-800 shadow-lg overflow-y-auto ${
+      className={`transition-all duration-300 ease-in-out border-l border-gray-700 p-4 text-sm  bg-customgray h-screen text-gray-800 shadow-lg overflow-y-auto ${
         sidebarExpand ? "w-64" : "w-14"
       }`}
     >
-      <div className={`flex flex-row items-center mb-6 ${sidebarExpand && "space-x-4"}`}>
+      <div
+        className={`flex flex-row items-center mb-6 ${
+          sidebarExpand && "space-x-4"
+        }`}
+      >
         <FiSidebar
-          className={`text-2xl text-gray-500 hover:text-gray-900 hover:scale-110 ${!sidebarExpand && "size-32"}`}
+          className={`text-xl text-gray-300 hover:text-indigo-700 hover:scale-110 ${
+            !sidebarExpand && "size-32"
+          }`}
           onClick={() => setSidebarExpand(!sidebarExpand)}
         />
-        <h3 className={`text-2xl ${!sidebarExpand && "hidden"} text-gray-800 font-semibold`}>
+        <h3
+          className={`text-lg ${
+            !sidebarExpand && "hidden"
+          } text-gray-300 font-normal`}
+        >
           Dashboard
         </h3>
       </div>
@@ -84,35 +98,37 @@ export default function Sidebar({
           setSelectedElements={setSelectedElements}
           handleDelete={handleDelete}
         />
-      ) : sidebarExpand && (
-        <>
-          <NodeSection 
-            title="Automatic Tasks" 
-            nodes={autoNodeTypes} 
-            expanded={autoNodesExpand} 
-            setExpanded={setAutoNodesExpand}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-          />
+      ) : (
+        sidebarExpand && (
+          <>
+            <NodeSection
+              title="Automatic Tasks"
+              nodes={autoNodeTypes}
+              expanded={autoNodesExpand}
+              setExpanded={setAutoNodesExpand}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+            />
 
-          <NodeSection 
-            title="Manual Tasks" 
-            nodes={manualNodeTypes} 
-            expanded={manualNodesExpand} 
-            setExpanded={setManualNodesExpand}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-          />
+            <NodeSection
+              title="Manual Tasks"
+              nodes={manualNodeTypes}
+              expanded={manualNodesExpand}
+              setExpanded={setManualNodesExpand}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+            />
 
-          <NodeSection 
-            title="Controls" 
-            nodes={controlNodesTypes} 
-            expanded={controlNodesExpand} 
-            setExpanded={setControlNodesExpand}
-            onDragStart={onDragStart}
-            onDragEnd={onDragEnd}
-          />
-        </>
+            <NodeSection
+              title="Controls"
+              nodes={controlNodesTypes}
+              expanded={controlNodesExpand}
+              setExpanded={setControlNodesExpand}
+              onDragStart={onDragStart}
+              onDragEnd={onDragEnd}
+            />
+          </>
+        )
       )}
     </aside>
   );

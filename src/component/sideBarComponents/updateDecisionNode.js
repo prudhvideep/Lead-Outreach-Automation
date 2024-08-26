@@ -178,12 +178,12 @@ export default function UpdateDecisionNode({
 
   return (
     <div>
-      <h3 className="text-xl mb-4 text-gray-800 font-semibold">
+      <h3 className="text-md mb-4 text-gray-300 font-semibold">
         Update Decision Node
       </h3>
-      {Object.keys(decisionNode).length !== 0 && (
-        <div className="mt-4 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
-          <p className="font-medium text-gray-800">Expressions</p>
+      {(
+        <div className="mt-4 p-4 space-y-4 border-gray-700 bg-customgray border-2 rounded-xl hover:border-gray-600">
+          <p className="font-medium text-gray-300">Expressions</p>
           {Object.keys(nodeExpressions).length > 0 && (
             <div className="relative space-y-2 bg-inherit rounded-lg w-full">
               {Object.entries(nodeExpressions).map(([key, value]) => (
@@ -214,10 +214,10 @@ export default function UpdateDecisionNode({
           )}
           <div className="flex flex-col justify-center">
             <button
-              className={`bg-white font-semibold border rounded-md border-dashed p-1 ${
+              className={`bg-customgray font-semibold border rounded-md border-dashed p-1 ${
                 addExpression || editExpression
                   ? "border-gray-600 text-gray-600 cursor-not-allowed"
-                  : "border-blue-500 text-blue-500 hover:bg-blue-50"
+                  : "border-blue-500 text-blue-500 "
               }`}
               disabled={addExpression || editExpression}
               onClick={() => {
@@ -232,12 +232,12 @@ export default function UpdateDecisionNode({
       )}
       {(addExpression || editExpression) && (
         <div className="mt-6 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400">
-          <p className="font-medium w-auto h-auto text-gray-800">
+          <p className="font-medium w-auto h-auto text-gray-300">
             {editExpression ? "Edit Expression" : "Add Expression"}
           </p>
           <div>
             <div className="flex flex-row space-x-1">
-              <p className="mb-1 w-auto h-auto text-slate-500 flex flex-row">
+              <p className="mb-1 w-auto h-auto text-gray-300 flex flex-row">
                 Expression Name
               </p>
               <span className="mt-auto mb-auto">
@@ -253,7 +253,7 @@ export default function UpdateDecisionNode({
           </div>
           <div>
             <div className="flex flex-row space-x-1">
-              <p className="w-auto h-auto text-slate-500 flex flex-row">
+              <p className="w-auto h-auto text-gray-300 flex flex-row">
                 Condition{" "}
               </p>
               <span className="mt-auto mb-auto">
@@ -271,7 +271,7 @@ export default function UpdateDecisionNode({
           </div>
           <div>
             <div className="flex flex-row space-x-1">
-              <p className="w-auto h-auto text-slate-500 flex flex-row">
+              <p className="w-auto h-auto text-gray-300 flex flex-row">
                 Value{" "}
               </p>
               <span className="mt-auto mb-auto">

@@ -11,8 +11,6 @@ import ReactFlow, {
   useNodesState,
   useEdgesState,
   Panel,
-  MiniMap,
-  Controls,
   Background,
   MarkerType,
 } from "reactflow";
@@ -78,10 +76,11 @@ const App = () => {
   );
 
   //Constants
-  const EDGE_COLOR = "#b1b1b7";
+  const EDGE_COLOR = "#d1d1d7";
   const EDGE_COMPLETED_COLOR = "#4f46e5";
-  const ARROW_SIZE = 16;
+  const ARROW_SIZE = 18;
   const EDGE_SELECTED_COLOR = "#555";
+  const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 0.75 };
 
   // Update nodes data when nodeName or selectedElements changes
   useEffect(() => {
@@ -155,10 +154,6 @@ const App = () => {
     );
   }, []);
 
-  // Setup viewport
-  // const { setViewport } = useReactFlow();
-
-  // Handle edge connection
   const onConnect = useCallback(
     (params) => {
       console.log("Edge created: ", params);
@@ -178,18 +173,17 @@ const App = () => {
     orient: "auto",
   };
 
-  //Edge default option
   const defaultEdgeOptions = {
     type: "smoothstep",
     animated: false,
     style: {
       stroke: EDGE_COLOR,
+      strokeWidth: 2,
       transition: "stroke 0.3s ease",
     },
     markerEnd: customMarker,
   };
 
-  //Handle edge click
   const onEdgeClick = useCallback(
     (event, edge) => {
       setEdges((eds) =>
@@ -199,10 +193,12 @@ const App = () => {
           style: {
             ...e.style,
             stroke: e.id === edge.id ? EDGE_SELECTED_COLOR : EDGE_COLOR,
+            strokeWidth: 2,
           },
           markerEnd: {
             ...e.markerEnd,
             color: e.id === edge.id ? EDGE_SELECTED_COLOR : EDGE_COLOR,
+            strokeWidth: 2,
           },
         }))
       );
@@ -210,27 +206,25 @@ const App = () => {
     [setEdges]
   );
 
-  // Enable drop effect on drag over
   const onDragOver = useCallback((event) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = "move";
   }, []);
 
   const getExpressionOptions = (nodeType) => {
-
     switch (nodeType) {
       case "sms":
       case "whatsapp":
-        return  "messageStatus";
+        return "messageStatus";
       case "email":
         return "emailStatus";
       case "teleCall":
       case "botCall":
         return "callStatus";
       case "wait":
-        return "paymentStatus" ;
+        return "paymentStatus";
       default:
-        return "status" ;
+        return "status";
     }
   };
 
@@ -274,11 +268,11 @@ const App = () => {
             position: decisionNodePosition,
             decisionNode: nodeId,
             expressions: {
-            [`${nodeId}$${getExpressionOptions(nodeType)}`]: {
-              condition: `==`,
-              value: status,
-            }
-          }
+              [`${nodeId}$${getExpressionOptions(nodeType)}`]: {
+                condition: `==`,
+                value: status,
+              },
+            },
           },
         };
 
@@ -291,14 +285,15 @@ const App = () => {
           type: "smoothstep",
           animated: false,
           style: {
-            stroke: "#b1b1b7",
+            stroke: "#d1d1d7",
+            strokeWidth: 2,
             transition: "stroke 0.3s ease",
           },
           markerEnd: {
             type: "arrow",
-            width: 16,
-            height: 16,
-            color: "#b1b1b7",
+            width: 18,
+            height: 18,
+            color: "#d1d1d7",
             strokeWidth: 2,
             markerUnits: "strokeWidth",
             orient: "auto",
@@ -324,7 +319,8 @@ const App = () => {
     return `${nodeType}#${count}`;
   };
 
-  // Handle drop event to add a new node
+  
+
   const onDrop = useCallback(
     (event) => {
       event.preventDefault();
@@ -369,7 +365,7 @@ const App = () => {
   );
 
   const rfStyle = {
-    backgroundColor: "#ffffff",
+    backgroundColor: "#1E1E1E",
   };
 
   // Handle pane click
@@ -394,10 +390,13 @@ const App = () => {
             ...e.style,
             stroke: isCompleted ? EDGE_COMPLETED_COLOR : EDGE_COLOR,
             opacity: isCompleted ? 1 : 0.5,
+            strokeWidth: 2,
           },
           markerEnd: {
             ...e.markerEnd,
             color: isCompleted ? EDGE_COMPLETED_COLOR : EDGE_COLOR,
+            width: ARROW_SIZE,
+            height: ARROW_SIZE,
           },
         };
       })
@@ -422,15 +421,14 @@ const App = () => {
           style={rfStyle}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
-          fitView
           proOptions={{ hideAttribution: true }}
           snapToGrid={true}
           deleteKeyCode={["Backspace", "Delete"]}
           selectionKeyCode={["Control", "Meta"]}
+          defaultViewport={DEFAULT_VIEWPORT}
         >
-          <Background variant="dots" gap={12} size={1} />
-          <Controls />
-          <MiniMap zoomable pannable />
+          <Background variant="dots" gap={14} size={2} color="#333" />
+          {/* <MiniMap zoomable pannable /> */}
           <Panel>
             <ToolBar
               nodes={nodes}

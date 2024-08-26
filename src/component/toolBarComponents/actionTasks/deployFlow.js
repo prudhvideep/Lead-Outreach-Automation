@@ -1,6 +1,4 @@
 import React, { useCallback } from "react";
-import { GrDeploy } from "react-icons/gr";
-import { ImSpinner } from "react-icons/im";
 
 const DeployFlow = ({
   nodes,
@@ -26,7 +24,6 @@ const DeployFlow = ({
   };
 
   const convertToBPMN = (nodes, edges) => {
-
     let pdKey = generateProcessDefinitionKey();
 
     let bpmnXml = `<?xml version="1.0" encoding="UTF-8"?>
@@ -107,8 +104,8 @@ const DeployFlow = ({
           });
         }
       } else {
-        console.log("Node Type ---> ",node.type);
-        if(node.type === "sms" || node.type === "whatsapp"){
+        console.log("Node Type ---> ", node.type);
+        if (node.type === "sms" || node.type === "whatsapp") {
           bpmnXml += `
           <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
             node.id
@@ -120,8 +117,7 @@ const DeployFlow = ({
             <incoming>flow_${flowCounter - 1}</incoming>
             <outgoing>flow_${flowCounter}</outgoing>
           </${nodeType}>`;
-
-        }else{
+        } else {
           bpmnXml += `
           <sequenceFlow id="flow_${flowCounter++}" sourceRef="${prevNodeId}" targetRef="${
             node.id
@@ -266,7 +262,7 @@ const DeployFlow = ({
     }
 
     const startNodes = nodes.filter((node) => node.type === "start");
-    if(startNodes.length === 0){
+    if (startNodes.length === 0) {
       alert("Error: No Starting Point (Provide a Start Node)");
       return;
     }
@@ -279,14 +275,14 @@ const DeployFlow = ({
 
     //Check if all the decision nodes have expressions
     const emptyExpressionNodes = nodes
-    .filter((node) => node.type === "decision")
-    .filter((node) => Object.keys(node.data.expressions).length === 0);
+      .filter((node) => node.type === "decision")
+      .filter((node) => Object.keys(node.data.expressions).length === 0);
 
-    if(emptyExpressionNodes.length !== 0){
+    if (emptyExpressionNodes.length !== 0) {
       alert("Error: One or more decision nodes are missing expressions.");
       return;
     }
-     
+
     //Check for unconnected nodes
     if (nodes.length > 1 && (emptyTargetHandles > 1 || isNodeUnconnected())) {
       alert(
@@ -351,16 +347,19 @@ const DeployFlow = ({
 
   return (
     <div
-      className={`p-2 text-gray-500 border-2 border-gray-500 bg-gray-50 rounded-full hover:text-indigo-500 hover:border-indigo-500 hover:scale-110 transition-all duration-300 ease-in-out ${
+      className={`text-gray-500 hover:scale-110 hover:text-indigo-500 hover:border-indigo-500 transition-all duration-300 ease-in-out ${
         collapse ? "hidden" : ""
       } ${deploying ? "cursor-not-allowed" : "cursor-pointer"}`}
-      title={deploying ? "Deploying..." : "Deploy Flow"}
       onClick={deploying ? null : handleDeploy}
     >
       {deploying ? (
-        <ImSpinner className="text-xl animate-spin text-indigo-500" />
+        <button className="p-1 pl-2 pr-2 bg-blue-500 rounded-md text-white text-sm font-medium">
+          Deploying
+        </button>
       ) : (
-        <GrDeploy className="text-xl" />
+        <button className="p-1 pl-2 pr-2 bg-blue-500 rounded-md text-white text-sm font-medium">
+          Deploy
+        </button>
       )}
     </div>
   );

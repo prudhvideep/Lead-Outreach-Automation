@@ -144,31 +144,31 @@ export default function UpdateNode({
 
   return (
     <div>
-      <h3 className="text-xl mb-4 text-gray-800 font-semibold">Update Node</h3>
-      <div className="p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
-        <p className="font-medium text-gray-800">Node Data</p>
+      <h3 className="text-md mb-4 text-gray-300 font-semibold">Update Node</h3>
+      <div className="p-4 space-y-4 border-gray-700 border-2 rounded-xl bg-customgray hover:border-gray-600">
+        <p className="text-xs font-medium text-gray-300">Node Data</p>
         <textarea
           type="text"
-          className="block w-full pt-2 px-3 pb-3 overflow-y-auto text-gray-700 border border-gray-400 rounded-lg bg-white-500 break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="block w-full pt-2 px-3 pb-3 overflow-y-auto text-sm text-gray-300 border border-gray-700 rounded-lg bg-customgray break-words placeholder:text-gray-300 placeholder:text-xs  focus:border-transparent transition-all duration-200"
           value={nodeInfoVar}
           onChange={handleInfoChange}
           placeholder="Add text and {variables}"
           style={{ height: "160px" }}
         />
       </div>
-      <div className="relative p-4 mt-6 space-y-2 border-gray-200 border-2 rounded-xl hover:border-gray-400 bg-white">
-        <p className="font-medium text-gray-800">Wait Time</p>
-        <FiClock className="absolute inset-y-1 right-5" />
+      <div className="relative p-4 mt-6 space-y-2 border-gray-700 border-2 rounded-xl bg-customgray hover:border-gray-600">
+        <p className="text-gray-300 text-xs font-medium">Wait Time</p>
+        <FiClock className="absolute inset-y-1 right-5 text-gray-300" />
         <input
           type="number"
-          className="block w-full pt-2 px-3 pb-3 text-gray-700 border border-gray-400 rounded-lg bg-white-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+          className="block w-full pt-2 px-3 pb-3 bg-customgray text-gray-300 border border-gray-700 rounded-lg bg-white-500 focus:border-transparent placeholder:text-gray-300 placeholder:text-xs transition-all duration-200"
           value={waitTime}
           onChange={handleWaitTimeChange}
           placeholder="Wait time in sec"
         />
       </div>
-      <div className="mt-6 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400">
-        <p className="font-medium w-auto h-auto text-gray-800">Variables</p>
+      <div className="mt-6 p-4 space-y-4 border-gray-700 border-2 rounded-xl hover:border-gray-600">
+        <p className=" w-auto h-auto text-gray-300">Variables</p>
         {Object.keys(nodeVariables).length > 0 && (
           <div className="relative space-y-2 bg-inherit rounded-lg w-full">
             {Object.entries(nodeVariables).map(([key, value]) => (
@@ -182,13 +182,13 @@ export default function UpdateNode({
                       value: value,
                     });
                   }}
-                  className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
+                  className="underline text-indigo-400 italic hover:text-indigo-500 flex-grow cursor-pointer"
                 >
                   {key.split('$')[1]}
                 </h1>
                 <FaTrashAlt
                   id={key}
-                  className="text-gray-500 hover:text-red-500 ml-2 cursor-pointer"
+                  className="text-gray-300 hover:text-red-500 ml-2 cursor-pointer"
                   onClick={() => handleDeleteVariable(key)}
                 />
               </div>
@@ -197,10 +197,10 @@ export default function UpdateNode({
         )}
         <div className="flex flex-col justify-center">
           <button
-            className={`bg-white font-semibold border rounded-md border-dashed p-1 ${
+            className={`bg-customgray font-semibold border rounded-md border-dashed p-1 ${
               addVariable || editVariable
-                ? "border-gray-600 text-gray-600 cursor-not-allowed"
-                : "border-blue-500 text-blue-500 hover:bg-blue-50"
+                ? "border-gray-600 text-gray-300 cursor-not-allowed"
+                : "border-blue-500 text-blue-500"
             }`}
             disabled={addVariable || editVariable}
             onClick={() => {
@@ -213,22 +213,22 @@ export default function UpdateNode({
         </div>
       </div>
       {(addVariable || editVariable) && (
-        <div className="mt-6 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400">
-          <p className="font-medium w-auto h-auto text-gray-800">
+        <div className="mt-6 p-4 space-y-4 border-gray-700 border-2 rounded-xl hover:border-gray-600">
+          <p className="font-normal w-auto h-auto text-sm text-gray-300">
             {editVariable ? "Edit Variable" : "Add Variable"}
           </p>
           <div>
             <div className="flex flex-row space-x-1">
-              <p className="w-auto h-auto text-slate-500 flex flex-row">
+              <p className="w-auto h-auto text-xs text-slate-300 flex flex-row">
                 Variable Name
               </p>
               <span className="mt-auto mb-auto">
-                <HiVariable />
+                <HiVariable className="text-gray-300"/>
               </span>
             </div>
             <input
-              className={`mt-1 block w-full p-1 px-3 text-gray-700 border border-gray-300 rounded-lg break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${
-                editVariable ? "bg-gray-100" : ""
+              className={`mt-1 block w-full p-1 px-3 text-xs text-gray-300 border bg-customgray border-gray-700 rounded-lg break-words transition-all duration-200 ${
+                editVariable ? "bg-customgray" : ""
               }`}
               disabled={editVariable}
               value={variable.name.split("$")[1]}
@@ -237,15 +237,15 @@ export default function UpdateNode({
           </div>
           <div>
             <div className="flex flex-row space-x-1">
-              <p className="w-auto h-auto text-slate-500 flex flex-row">
-                Value{" "}
+              <p className="w-auto h-auto text-xs text-slate-300 flex flex-row">
+                Value
               </p>
               <span className="mt-auto mb-auto">
-                <TbMathFunction />
+                <TbMathFunction className="text-gray-300"/>
               </span>
             </div>
             <input
-              className="mt-1 block w-full p-1 px-3 text-gray-700 border border-gray-300 rounded-lg break-words focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+              className={`mt-1 block w-full p-1 px-3 text-xs text-gray-300 border bg-customgray border-gray-700 rounded-lg break-words transition-all duration-200`}
               value={variable.value}
               onChange={handleVariableValueChange}
             />
@@ -280,7 +280,7 @@ export default function UpdateNode({
           </div>
         </div>
       )}
-      <div className="mt-4 flex p-4 space-x-2 rounded-xl">
+      <div className="mt-4 flex p-4 space-x-6 rounded-xl">
         <button
           className="bg-blue-500 text-white rounded-lg p-2 w-1/2 hover:bg-blue-600 transition-all duration-200 ease-in-out transform hover:scale-105"
           onClick={() => {

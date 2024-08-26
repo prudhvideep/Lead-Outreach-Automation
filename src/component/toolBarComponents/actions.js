@@ -1,8 +1,15 @@
-import React, { useState } from "react";
-import { FaAngleDoubleLeft, FaAngleDoubleRight } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { useReactFlow, useStore } from "reactflow";
 import DeployFlow from "./actionTasks/deployFlow";
 import ExecuteFlow from "./actionTasks/executeFlow";
 import RefreshStatus from "./actionTasks/refreshStatus";
+import {
+  FaExpand,
+  FaSearchMinus,
+  FaSearchPlus,
+  FaAngleDoubleLeft,
+  FaAngleDoubleRight,
+} from "react-icons/fa";
 
 const Actions = ({
   nodes,
@@ -20,11 +27,50 @@ const Actions = ({
   completedTasks,
   setCompletedTasks,
 }) => {
+  const [zoomLevel, setZoomLevel] = useState();
   const [collapse, setCollapse] = useState(false);
+  const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const currentZoom = useStore((state) => state.transform[2]);
+
+  useEffect(() => {
+    setZoomLevel(Math.round(currentZoom * 100));
+  }, [currentZoom]);
 
   return (
-    <div className="absolute inset-y-0 left-72">
-      <div className="flex flex-row space-x-4">
+    <div className="absolute inset-y-1 left-[220px]">
+      <div className="transition-all duration-300 ease-in-out flex flex-row space-x-2 items-center justify-center">
+        {!collapse && (
+          <button
+            title="Full Screen"
+            className="bg-customgray rounded-md p-1 outline outline-gray-700 hover:bg-highlightedgray"
+            onClick={fitView}
+          >
+            <FaExpand className="text-white text-md font-extralight" />
+          </button>
+        )}
+        {!collapse && (
+          <button
+            title="Zoom Im"
+            className="bg-customgray rounded-md p-1 outline outline-gray-700 hover:bg-highlightedgray"
+            onClick={zoomIn}
+          >
+            <FaSearchPlus className="text-white text-md font-extralight" />
+          </button>
+        )}
+        {!collapse && (
+          <span className="bg-highlightedgray rounded-md p-1 pl-2 pr-2 text-xs text-gray-300 font-medium">
+            {zoomLevel}%
+          </span>
+        )}
+        {!collapse && (
+          <button
+            title="Zoom Out"
+            className="bg-customgray rounded-md p-1 outline outline-gray-700 hover:bg-highlightedgray"
+            onClick={zoomOut}
+          >
+            <FaSearchMinus className="text-white text-md font-extralight" />
+          </button>
+        )}
         <DeployFlow
           nodes={nodes}
           edges={edges}
@@ -54,14 +100,14 @@ const Actions = ({
         />
         {!collapse && (
           <FaAngleDoubleLeft
-            className="mt-2.5 text-xl text-gray-500 bg-white-200 rounded-full hover:text-indigo-500 hover:scale-110"
+            className="text-xl text-gray-300 bg-white-200 rounded-full hover:text-indigo-500 hover:scale-110"
             onClick={() => setCollapse(true)}
             title="Collapse"
           />
         )}
         {collapse && (
           <FaAngleDoubleRight
-            className="mt-2.5 text-xl text-gray-500 bg-white-200 rounded-full hover:text-indigo-500 hover:scale-110"
+            className="mt-1 text-xl text-gray-300 bg-white-200 rounded-full hover:text-indigo-500 hover:scale-110"
             onClick={() => setCollapse(false)}
             title="Expand"
           />

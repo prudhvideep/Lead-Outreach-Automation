@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      width : {
+        "9/10" : '90%'
+      },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
         "gradient-conic":
@@ -35,6 +38,8 @@ module.exports = {
           DEFAULT: "#4ade80",
           edge: "#86efac",
         },
+        customgray : "#1E1E1E",
+        highlightedgray: "#363636"
       },
     },
   },
@@ -74,6 +79,7 @@ module.exports = {
     'shadow-glow',
     'bg-completed',
     'text-completed',
+    'text-blue-300',
     'stroke-completed-edge',
   ],
 };

@@ -1,26 +1,23 @@
 import React from "react";
 import { Handle, Position } from "reactflow";
-import { IoStopOutline } from "react-icons/io5";
+import { FaGripLines } from "react-icons/fa";
 
 function EndNode({ data, selected }) {
   return (
     <>
       <div
-        className={`relative shadow-xl flex items-center justify-center bg-white w-10 h-10 text-center bg-red-10 border border-red-500 rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 ${
-          selected ? "border-solid border-2 border-red-500" : ""
+        className={`relative p-2 flex flex-row items-center justify-center space-x-2 text-center font-medium  bg-red-900 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-105 ${
+          selected ? "outline outline-offset-1 outline-blue-700" : ""
         }`}
       >
-         <IoStopOutline
-          className={`${
-            selected ? "text-red-600 text-2xl" : "text-red-500 text-2xl"
-          }`}
-        />
+        <FaGripLines className="text-gray-500" />
+        <p>End</p>
       </div>
       <Handle
         id="a"
         type="target"
         position={Position.Left}
-        className="w-2 h-2 rounded-full bg-slate-500"
+        className="absolute -left-[15px] top-1/2 w-3 h-3 rounded-full bg-gray-700 border border-gray-500"
       />
     </>
   );

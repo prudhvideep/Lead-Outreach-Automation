@@ -1,26 +1,23 @@
 import React from "react";
 import { Handle, Position } from "reactflow";
-import { IoPlayOutline } from "react-icons/io5";
+import { FaGripLines } from "react-icons/fa";
 
 function StartNode({ data, selected }) {
   return (
     <>
       <div
-        className={`relative shadow-xl flex items-center justify-center bg-white w-10 h-10 text-center bg-green-20 border border-green-500 rounded-full transition-all duration-200 ease-in-out transform hover:scale-105 ${
-          selected ? "border-solid border-2 border-green-600" : ""
+        className={`relative p-2 flex flex-row items-center justify-center space-x-2 text-center font-medium  bg-green-900 rounded-xl transition-all duration-200 ease-in-out transform hover:scale-105 ${
+          selected ? "outline outline-offset-1 outline-blue-700" : ""
         }`}
-      >
-        <IoPlayOutline
-          className={`${
-            selected ? "text-green-600 text-2xl" : "text-green-500 text-2xl"
-          }`}
-        />
+      > 
+        < FaGripLines className="text-gray-500"/>
+        <p >Start</p>
       </div>
       <Handle
         id="b"
         type="source"
         position={Position.Right}
-        className="w-2 h-2 rounded-full bg-gray-500"
+        className="absolute -right-[15px] top-1/2 w-3 h-3 rounded-full bg-gray-700 border border-gray-500"
       />
     </>
   );

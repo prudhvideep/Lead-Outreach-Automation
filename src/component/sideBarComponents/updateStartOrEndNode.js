@@ -8,8 +8,8 @@ export default function UpdateStartOrEndNode({
 }) {
   return (
     <div>
-      <h3 className="text-xl mb-4 text-gray-800 font-semibold">Actions</h3>
-      <div className="mt-4 flex p-4 space-x-2 rounded-xl">
+      <h3 className="text-md mb-4 text-gray-300 font-medium">Actions</h3>
+      <div className="w-full mt-4 flex flex-row p-4 space-x-6 rounded-xl">
         <button
           className="bg-blue-500 text-white rounded-lg p-2 w-1/2 hover:bg-blue-600 transition-all duration-200 ease-in-out transform hover:scale-105"
           onClick={() => {
