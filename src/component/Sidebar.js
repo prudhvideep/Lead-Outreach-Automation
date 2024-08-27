@@ -26,6 +26,9 @@ export default function Sidebar({
   setNodeExpressions,
   selectedNode,
   setSelectedElements,
+  nodeTemplates,
+  selectedNodeTemplate,
+  setSelectedNodeTemplate,
 }) {
   const [sidebarExpand, setSidebarExpand] = useState(true);
   const [autoNodesExpand, setAutoNodesExpand] = useState(true);
@@ -55,7 +58,7 @@ export default function Sidebar({
   };
 
   return (
-    <aside
+    <div
       className={`transition-all duration-300 ease-in-out border-l border-gray-700 p-4 text-sm  bg-customgray h-screen text-gray-800 shadow-lg overflow-y-auto ${
         sidebarExpand ? "w-64" : "w-14"
       }`}
@@ -97,6 +100,9 @@ export default function Sidebar({
           setNodeExpressions={setNodeExpressions}
           setSelectedElements={setSelectedElements}
           handleDelete={handleDelete}
+          nodeTemplates={nodeTemplates} 
+          selectedNodeTemplate={selectedNodeTemplate}
+          setSelectedNodeTemplate={setSelectedNodeTemplate}
         />
       ) : (
         sidebarExpand && (
@@ -130,6 +136,6 @@ export default function Sidebar({
           </>
         )
       )}
-    </aside>
+    </div>
   );
 }

@@ -9,6 +9,7 @@ import {
   FaPhoneAlt,
 } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
+import { FiEdit } from 'react-icons/fi';
 
 function CustomNode({ data, selected, id }) {
   const nodeTypes = {
@@ -74,13 +75,13 @@ function CustomNode({ data, selected, id }) {
       setTimeout(() => setAnimateStatus(true), 50);
     }
   }, [hideStatus]);
-  
+
   useEffect(() => {
     const handleShowStatus = (event) => {
       event.preventDefault();
       setAnimateStatus(true);
       setHideStatus(false);
-    }
+    };
 
     if (nodeRef.current) {
       nodeRef.current.addEventListener("contextmenu", handleShowStatus);
@@ -91,7 +92,7 @@ function CustomNode({ data, selected, id }) {
         nodeRef.current.removeEventListener("contextmenu", handleShowStatus);
       }
     };
-  },[hideStatus])
+  }, [hideStatus]);
 
   const handleNodeClick = (status) => {
     setAnimateStatus(false);
@@ -102,7 +103,7 @@ function CustomNode({ data, selected, id }) {
   };
 
   const handleCloseClick = (event) => {
-    event.stopPropagation(); 
+    event.stopPropagation();
     setHideStatus(true);
   };
 
@@ -125,7 +126,12 @@ function CustomNode({ data, selected, id }) {
             className="text-xs font-normal text-gray-300 bg-inherit"
             style={{ whiteSpace: "pre-wrap" }}
           >
-            {data.info || "Click to Edit //"}
+            {data.info || (
+              <div className="flex items-center text-xs font-normal text-gray-400">
+                <FiEdit className="mr-1" />
+                <span>Edit content</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -168,9 +174,10 @@ function CustomNode({ data, selected, id }) {
             </div>
           ))}
           <div
-            onClick={handleCloseClick} 
-            className="rounded-full w-4 h-4 outline outline-offset-1 hover:outline-blue-700 outline-gray-300 hover:cursor-pointer">
-            <IoCloseSharp className="text-gray-300 hover:text-blue-700 font-bold"/>
+            onClick={handleCloseClick}
+            className="rounded-full w-4 h-4 outline outline-offset-1 hover:outline-blue-700 outline-gray-300 hover:cursor-pointer"
+          >
+            <IoCloseSharp className="text-gray-300 hover:text-blue-700 font-bold" />
           </div>
         </div>
       )}

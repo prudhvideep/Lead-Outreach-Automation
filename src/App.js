@@ -24,6 +24,8 @@ import EndNode from "./component/nodes/EndNode.js";
 import WaitNode from "./component/nodes/WaitNode.js";
 import ToolBar from "./component/ToolBar.js";
 import DecisionNode from "./component/nodes/DecisionNode.js";
+import { GiConsoleController } from "react-icons/gi";
+import { SiWritedotas } from "react-icons/si";
 
 // Key for local storage
 //const flowKey = "flow-key";
@@ -48,6 +50,8 @@ const App = () => {
   const [nodeInfoVar, setNodeInfoVar] = useState("");
   const [nodeVariables, setNodeVariables] = useState({});
   const [nodeExpressions, setNodeExpressions] = useState({});
+  const [nodeTemplates, setNodeTemplates] = useState([]);
+  const [selectedNodeTemplate,setSelectedNodeTemplate] = useState({});
   const [completedTasks, setCompletedTasks] = useState([]);
   const nodeCountsRef = useRef({
     sms: 0,
@@ -82,7 +86,6 @@ const App = () => {
   const EDGE_SELECTED_COLOR = "#555";
   const DEFAULT_VIEWPORT = { x: 0, y: 0, zoom: 0.75 };
 
-  // Update nodes data when nodeName or selectedElements changes
   useEffect(() => {
     if (selectedElements.length > 0) {
       setNodes((nds) =>
@@ -95,6 +98,7 @@ const App = () => {
               infoVar: nodeInfoVar,
               variables: nodeVariables,
               expressions: nodeExpressions,
+              selectedNodeTemplate : selectedNodeTemplate,
             };
           }
           return node;
@@ -109,7 +113,6 @@ const App = () => {
     }
   }, [nodeName, nodeInfo, nodeInfoVar, selectedElements, setNodes]);
 
-  // Highlight completed nodes
   useEffect(() => {
     if (completedTasks.length > 0) {
       const completedNodeIds = completedTasks.map((task) => task.taskKey);
@@ -138,7 +141,87 @@ const App = () => {
     }
   }, [completedTasks, setNodes, setEdges]);
 
-  // Handle node click
+  const getNodeTemplates = (nodeType) => {
+    switch (nodeType) {
+      case "sms":
+        return [
+          {
+            name: "Payment Reminder",
+            body: `Dear {name},\n\nWe wish to remind you that there is a pending amount of {amount} in your loan account {loan_num}. Please make the payment using the following link: {link}.\n\nThank you.`,
+          },
+          {
+            name: "Payment Link Follow-up",
+            body: `Dear {name},\n\nWe have sent a payment link on {date}. Please make the payment at your earliest convenience. Press 1 to receive the payment link again or 2 to request a callback.\n\nThank you.`,
+          },
+        ];
+      case "whatsapp":
+        return [
+          {
+            name: "WhatsApp Payment Reminder",
+            body: `Hello {name},\n\nThis is a reminder that your loan account {loan_num} has an outstanding amount of {amount}. Please complete the payment using this link: {link}.\n\nThank you.`,
+          },
+          {
+            name: "WhatsApp Follow-up",
+            body: `Hi {name},\n\nWe sent you a payment link on {date}. Please use it to make your payment. Reply with 1 to receive the link again or 2 for a callback.\n\nThank you.`,
+          },
+          {
+            name: "WhatsApp Loan Account Summary",
+            body: `Dear {name},\n\nHere is a summary of your loan account:\nLoan Number: {loan_num}\nOutstanding Balance: {amount}\nPlease make your payment using this link: {link}.\n\nThank you.`,
+          },
+          {
+            name: "WhatsApp Final Reminder",
+            body: `Dear {name},\n\nThis is a final reminder to pay {amount} for your loan account {loan_num}. Click here to make the payment: {link}.\n\nThank you.`,
+          },
+          {
+            name: "WhatsApp Payment Incentive",
+            body: `Hello {name},\n\nPay your due amount of {amount} by {due_date} and receive {offer}. Use this link to complete the payment: {link}.\n\nThank you.`,
+          },
+        ];
+
+      case "email":
+        return [
+          {
+            name: "Email Payment Reminder",
+            body: "Dear {name},\n\nWe wanted to remind you that your loan account {loan_num} has a pending amount of {amount}. Please click the following link to make your payment: {link}\n\nThank you.",
+          },
+          {
+            name: "Email Follow-up",
+            body: "Dear {name},\n\nWe sent you a payment link on {date}, but we noticed that the payment is still pending. Please make the payment at your earliest convenience using this link: {link}.\n\nIf you need any assistance, don't hesitate to reply to this email.",
+          },
+          {
+            name: "Email Final Notice",
+            body: "Dear {name},\n\nThis is a final reminder that your payment for loan account {loan_num} is overdue. Please make the payment of {amount} immediately using this link: {link} to avoid any penalties.\n\nBest regards.",
+          },
+          {
+            name: "Email Account Closure Warning",
+            body: "Dear {name},\n\nWe regret to inform you that your loan account {loan_num} is at risk of closure due to non-payment. Please pay the outstanding amount of {amount} using this link: {link} to keep your account in good standing.\n\nContact us if you need assistance.",
+          },
+          {
+            name: "Email Payment Confirmation",
+            body: "Dear {name},\n\nThank you for your payment of {amount} towards your loan account {loan_num}. We have received your payment and your account is now up to date.\n\nFor any further assistance, please feel free to contact us.",
+          },
+        ];
+      case "botCall":
+        return [
+          {
+            name: "Bot Call Payment Reminder",
+            body: `This is an automated message for {name}. Your loan account {loan_num} has a pending amount of {amount}. Press 1 to make a payment or 2 to receive a payment link via SMS.\n\nThank you.`,
+          },
+          {
+            name: "Bot Call Follow-up",
+            body: `Hello {name},\n\nThis is a follow-up regarding your pending payment for loan account {loan_num}. Press 1 to make the payment or 2 to schedule a callback with a representative.\n\nThank you.`,
+          },
+          {
+            name: "Bot Call Final Reminder",
+            body: `Dear {name},\n\nThis is your final reminder to pay the outstanding amount of {amount} for loan account {loan_num}. Press 1 to pay now or 2 to receive the payment link via WhatsApp.\n\nThank you.`,
+          },
+        ];
+
+      default:
+        return [{ name: "", body: "" }];
+    }
+  };
+
   const onNodeClick = useCallback((event, node) => {
     setSelectedElements([node]);
     setNodeName(node.data.label);
@@ -146,6 +229,8 @@ const App = () => {
     setNodeInfoVar(node.data.infoVar);
     setNodeVariables(node.data.variables);
     setNodeExpressions(node.data.expressions);
+    setNodeTemplates(node.data.templates || []);
+    setSelectedNodeTemplate(node.data.selectedNodeTemplate || {});
     setNodes((nodes) =>
       nodes.map((n) => ({
         ...n,
@@ -236,17 +321,13 @@ const App = () => {
       console.log("Node Type ----> ", nodeType);
 
       if (reactFlowInstance) {
-        const screenPosition = reactFlowInstance.project(position);
-        const offsetX = 300;
-        const offsetY = 300;
+        const offsetX = 200;
+        const offsetY = 100;
 
-        const newScreenPosition = {
-          x: screenPosition.x + offsetX,
-          y: screenPosition.y + offsetY,
+        const newPosition = {
+          x: position.x + offsetX,
+          y: position.y + offsetY,
         };
-
-        const decisionNodePosition =
-          reactFlowInstance.screenToFlowPosition(newScreenPosition);
 
         const newNodeType = "decision";
         const newNodeId = getId();
@@ -254,7 +335,7 @@ const App = () => {
           id: newNodeId,
           type: newNodeType,
           nodeActionType: "control",
-          position: decisionNodePosition,
+          position: newPosition,
           data: {
             name: `${getNodeName(newNodeType)}`,
             label: `${newNodeType}`,
@@ -264,11 +345,14 @@ const App = () => {
             infoVar: "",
             decisionNode: {},
             variables: {},
+            selectedTemplate : {},
+            templates: getNodeTemplates(newNodeType),
             onStatusChange: handleStatusChange,
-            position: decisionNodePosition,
+            onExpressionChange: handleExpressionChange,
+            position: newPosition,
             decisionNode: nodeId,
             expressions: {
-              [`${nodeId}$${getExpressionOptions(nodeType)}`]: {
+              [`${getExpressionOptions(nodeType)}`]: {
                 condition: `==`,
                 value: status,
               },
@@ -277,9 +361,9 @@ const App = () => {
         };
 
         console.log("Node created: ", newDecisionNode);
-        setNodes((nds) => nds.concat(newDecisionNode));
 
-        console.log("Edges ----> ", edges);
+        // Update nodes and edges
+        setNodes((nds) => nds.concat(newDecisionNode));
 
         const newEdge = {
           type: "smoothstep",
@@ -309,7 +393,46 @@ const App = () => {
         console.error("React Flow instance is not available");
       }
     },
-    [reactFlowInstance, setNodes]
+    [reactFlowInstance, setNodes, setEdges]
+  );
+
+  const handleExpressionChange = useCallback(
+    (expressions) => {
+      setNodes((nds) =>
+        nds.map((node) => {
+          if (node.selected) {
+            let newExpressions = {};
+
+            if (Array.isArray(expressions)) {
+              expressions.forEach((expr) => {
+                if (expr.field && expr.operator && expr.value) {
+                  newExpressions[expr.field] = {
+                    condition: expr.operator,
+                    value: expr.value,
+                  };
+                }
+              });
+            } else if (typeof expressions === "object") {
+              Object.entries(expressions).forEach(([field, value]) => {
+                if (value.condition && value.value) {
+                  newExpressions[field] = {
+                    condition: value.condition,
+                    value: value.value,
+                  };
+                }
+              });
+            }
+
+            node.data = {
+              ...node.data,
+              expressions: newExpressions,
+            };
+          }
+          return node;
+        })
+      );
+    },
+    [setNodes]
   );
 
   const getNodeName = (nodeType) => {
@@ -318,8 +441,6 @@ const App = () => {
     const count = nodeCountsRef.current[nodeType];
     return `${nodeType}#${count}`;
   };
-
-  
 
   const onDrop = useCallback(
     (event) => {
@@ -353,7 +474,9 @@ const App = () => {
           decisionNode: {},
           variables: {},
           expressions: {},
+          templates: getNodeTemplates(type),
           onStatusChange: handleStatusChange,
+          onExpressionChange: handleExpressionChange,
           position: position,
         },
       };
@@ -404,7 +527,7 @@ const App = () => {
   };
 
   return (
-    <div className="flex flex-row min-h-screen lg:flex-row">
+    <div className="flex flex-row min-h-screen">
       <div className="flex-grow h-screen" ref={reactFlowWrapper}>
         <ReactFlow
           nodes={nodes}
@@ -428,7 +551,6 @@ const App = () => {
           defaultViewport={DEFAULT_VIEWPORT}
         >
           <Background variant="dots" gap={14} size={2} color="#333" />
-          {/* <MiniMap zoomable pannable /> */}
           <Panel>
             <ToolBar
               nodes={nodes}
@@ -457,12 +579,14 @@ const App = () => {
         setNodeExpressions={setNodeExpressions}
         selectedNode={selectedElements[0]}
         setSelectedElements={setSelectedElements}
+        nodeTemplates={nodeTemplates}
+        selectedNodeTemplate={selectedNodeTemplate}
+        setSelectedNodeTemplate={setSelectedNodeTemplate}
       />
     </div>
   );
 };
 
-// Wrap App with ReactFlowProvider
 function FlowWithProvider() {
   return (
     <ReactFlowProvider>

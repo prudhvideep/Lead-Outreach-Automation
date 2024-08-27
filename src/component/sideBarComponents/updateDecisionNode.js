@@ -41,7 +41,7 @@ export default function UpdateDecisionNode({
   const handleCreateExpression = () => {
     let updatedExpressions = {
       ...nodeExpressions,
-      [`${decisionNode?.value}$${expression.name}`]: {
+      [`${expression.name}`]: {
         condition: expression.condition,
         value: expression.value,
       },
@@ -68,7 +68,7 @@ export default function UpdateDecisionNode({
   const handleEditExpression = () => {
     let updatedExpressions = {
       ...nodeExpressions,
-      [`${decisionNode?.value}$${expression.name}`]: {
+      [`${expression.name}`]: {
         condition: expression.condition,
         value: expression.value,
       },
@@ -118,6 +118,8 @@ export default function UpdateDecisionNode({
     { value: "==", label: "==" },
     { value: "!=", label: "!=" },
   ];
+
+
 
   const getExpressionOptions = () => {
     let nodeType = decisionNode?.label ? decisionNode.label.split("$")[0] : "";
@@ -179,9 +181,9 @@ export default function UpdateDecisionNode({
   return (
     <div>
       <h3 className="text-md mb-4 text-gray-300 font-semibold">
-        Update Decision Node
+        Actions
       </h3>
-      {(
+      {/* {(
         <div className="mt-4 p-4 space-y-4 border-gray-700 bg-customgray border-2 rounded-xl hover:border-gray-600">
           <p className="font-medium text-gray-300">Expressions</p>
           {Object.keys(nodeExpressions).length > 0 && (
@@ -200,7 +202,6 @@ export default function UpdateDecisionNode({
                     }}
                     className="underline text-indigo-600 italic hover:text-indigo-800 flex-grow cursor-pointer"
                   >
-                    {console.log("Key ---> ",key)}
                     {key.split("$")[1]}
                   </h1>
                   <FaTrashAlt
@@ -229,8 +230,8 @@ export default function UpdateDecisionNode({
             </button>
           </div>
         </div>
-      )}
-      {(addExpression || editExpression) && (
+      )} */}
+      {/* {(addExpression || editExpression) && (
         <div className="mt-6 p-4 space-y-4 border-gray-200 border-2 rounded-xl hover:border-gray-400">
           <p className="font-medium w-auto h-auto text-gray-300">
             {editExpression ? "Edit Expression" : "Add Expression"}
@@ -313,8 +314,8 @@ export default function UpdateDecisionNode({
             </button>
           </div>
         </div>
-      )}
-      <div className="mt-4 flex p-4 space-x-2 rounded-xl">
+      )} */}
+      <div className="mt-4 flex p-4 space-x-6 rounded-xl">
         <button
           className="bg-blue-500 text-white rounded-lg p-2 w-1/2 hover:bg-blue-600 transition-all duration-200 ease-in-out transform hover:scale-105"
           onClick={() => {

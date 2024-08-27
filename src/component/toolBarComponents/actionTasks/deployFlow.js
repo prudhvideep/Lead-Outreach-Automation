@@ -158,7 +158,7 @@ const DeployFlow = ({
 
     const generateFieldExtensions = (data, nodeType) => {
       if (!data.variables && !data.expressions) return "";
-
+      
       let extensions = "<extensionElements>";
       if (data.variables) {
         Object.entries(data.variables).forEach(([key, value]) => {
@@ -341,7 +341,7 @@ const DeployFlow = ({
         alert("Error: Process Deployment Failed!!!");
       }
 
-      //downloadXml(bpmnXml);
+      downloadXml(bpmnXml);
     }
   };
 

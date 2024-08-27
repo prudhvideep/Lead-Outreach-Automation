@@ -21,6 +21,9 @@ const NodeEditor = ({
   setNodeExpressions,
   setSelectedElements,
   handleDelete,
+  nodeTemplates,
+  selectedNodeTemplate,
+  setSelectedNodeTemplate,
 }) => {
   return (
     <>
@@ -36,6 +39,9 @@ const NodeEditor = ({
           setNodes={setNodes}
           setSelectedElements={setSelectedElements}
           handleDelete={handleDelete}
+          nodeTemplates={nodeTemplates}
+          selectedNodeTemplate={selectedNodeTemplate}
+          setSelectedNodeTemplate={setSelectedNodeTemplate}
         />
       )}
       {selectedNode.nodeActionType === "control" &&

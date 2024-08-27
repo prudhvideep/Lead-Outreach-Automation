@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FaTrashAlt } from "react-icons/fa";
 import { HiVariable } from "react-icons/hi2";
 import { TbMathFunction } from "react-icons/tb";
-import { FiClock } from 'react-icons/fi';
+import { FiClock } from "react-icons/fi";
 
 export default function UpdateNode({
   selectedNode,
@@ -14,17 +14,27 @@ export default function UpdateNode({
   setNodes,
   setSelectedElements,
   handleDelete,
+  nodeTemplates,
+  selectedNodeTemplate,
+  setSelectedNodeTemplate,
 }) {
   const [addVariable, setAddVariable] = useState(false);
   const [editVariable, setEditVariable] = useState(false);
   const [variable, setVariable] = useState({ name: "", value: "" });
-  const [waitTime, setWaitTime] = useState(nodeVariables[`${selectedNode.id}$waitTime`] || "");
+  const [waitTime, setWaitTime] = useState(
+    nodeVariables[`${selectedNode.id}$waitTime`] || ""
+  );
 
   useEffect(() => {
     setWaitTime(nodeVariables[`${selectedNode.id}$waitTime`] || "");
   }, [selectedNode, nodeVariables]);
 
-  // Process the text to replace the variables with values
+  const handleTemplateSelect = (template) => {
+    setSelectedNodeTemplate(template);
+    setNodeInfoVar(template.body);
+    setNodeInfo(processText(template.body));
+  };
+
   const processText = (text) => {
     let processedText = text;
     Object.entries(nodeVariables).forEach(([key, value]) => {
@@ -145,7 +155,22 @@ export default function UpdateNode({
   return (
     <div>
       <h3 className="text-md mb-4 text-gray-300 font-semibold">Update Node</h3>
-      <div className="p-4 space-y-4 border-gray-700 border-2 rounded-xl bg-customgray hover:border-gray-600">
+      <div className="mt-6 p-4 space-y-4 border-gray-700 border-2 rounded-xl bg-customgray hover:border-gray-600">
+        <p className="text-xs font-medium text-gray-300">Templates</p>
+        <select
+          className="block w-full pt-2 px-3 pb-3 text-sm text-gray-300 border border-gray-700 rounded-lg bg-customgray focus:border-transparent transition-all duration-200"
+          onChange={(e) => handleTemplateSelect(JSON.parse(e.target.value))}
+          value={selectedNodeTemplate ? JSON.stringify(selectedNodeTemplate) : ""}
+        >
+          <option value="">Select a template</option>
+          {nodeTemplates.map((template, index) => (
+            <option key={index} value={JSON.stringify(template)}>
+              {template.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="mt-4 p-4 space-y-4 border-gray-700 border-2 rounded-xl bg-customgray hover:border-gray-600">
         <p className="text-xs font-medium text-gray-300">Node Data</p>
         <textarea
           type="text"
@@ -184,7 +209,7 @@ export default function UpdateNode({
                   }}
                   className="underline text-indigo-400 italic hover:text-indigo-500 flex-grow cursor-pointer"
                 >
-                  {key.split('$')[1]}
+                  {key.split("$")[1]}
                 </h1>
                 <FaTrashAlt
                   id={key}
@@ -223,7 +248,7 @@ export default function UpdateNode({
                 Variable Name
               </p>
               <span className="mt-auto mb-auto">
-                <HiVariable className="text-gray-300"/>
+                <HiVariable className="text-gray-300" />
               </span>
             </div>
             <input
@@ -241,7 +266,7 @@ export default function UpdateNode({
                 Value
               </p>
               <span className="mt-auto mb-auto">
-                <TbMathFunction className="text-gray-300"/>
+                <TbMathFunction className="text-gray-300" />
               </span>
             </div>
             <input
@@ -284,7 +309,7 @@ export default function UpdateNode({
         <button
           className="bg-blue-500 text-white rounded-lg p-2 w-1/2 hover:bg-blue-600 transition-all duration-200 ease-in-out transform hover:scale-105"
           onClick={() => {
-            setSelectedElements([])
+            setSelectedElements([]);
           }}
         >
           Save

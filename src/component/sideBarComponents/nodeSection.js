@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from "react";
 import { FaAngleRight, FaChevronDown } from "react-icons/fa";
-import ReactDOM from "react-dom";
+import ReactDOM from "react-dom/client";
 
 const NodeSection = ({
   title,
@@ -12,43 +12,17 @@ const NodeSection = ({
 }) => {
   const dragItemsRef = useRef({});
 
-  useEffect(() => {
-    nodes.forEach((node) => {
-      const div = document.createElement("div");
-      div.className = "draggable-ghost";
-      div.style.pointerEvents = 'none';
-      document.body.appendChild(div);
-
-      ReactDOM.render(
-        <div className="p-2 w-32 flex items-center justify-center space-x-2 bg-black rounded-lg text-[8px]">
-          <div className={`text-${node.color}-${node.shade} text-sm `}>
-            {node.icon}
-          </div>
-          <span className="text-xs font-normal text-gray-300">
-            {node.label}
-          </span>
-        </div>,
-        div
-      );
-
-      dragItemsRef.current[node.type] = div;
-    });
-
-    return () => {
-      Object.values(dragItemsRef.current).forEach((div) => {
-        ReactDOM.unmountComponentAtNode(div);
-        document.body.removeChild(div);
-      });
-    };
-  }, [nodes]);
-
   const handleDragStart = (event, node) => {
+
     const ghostElement = dragItemsRef.current[node.type];
+
+
     if (ghostElement) {
-      event.dataTransfer.setDragImage(ghostElement, 1, 0);
+      event.dataTransfer.setDragImage(ghostElement, 0, 0);
     }
+
+
     onDragStart(event, node.type, node.nodeActionType);
-    event.target.style.opacity = "1";
   };
 
   const handleDragEnd = (event) => {
