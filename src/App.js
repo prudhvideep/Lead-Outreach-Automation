@@ -322,7 +322,7 @@ const App = () => {
 
       if (reactFlowInstance) {
         const offsetX = 200;
-        const offsetY = 100;
+        const offsetY = 200;
 
         const newPosition = {
           x: position.x + offsetX,
