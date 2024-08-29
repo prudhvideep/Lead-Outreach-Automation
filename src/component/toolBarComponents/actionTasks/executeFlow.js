@@ -19,7 +19,13 @@ const ExecuteFlow = ({
             headers: {
               "Content-Type": "application/xml",
             },
-            body: JSON.stringify({ processKey: processDefinitionKey }),
+            body: JSON.stringify({
+              processKey: processDefinitionKey,
+              name: "John Doe",
+              amount : "100.00",
+              loanNumber: "LN123456789",
+              paymentLink: "https://example.com/payment?loan=LN123456789",
+            }),
           }
         );
 

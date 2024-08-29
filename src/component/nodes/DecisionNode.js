@@ -80,7 +80,7 @@ function DecisionNode({ data, selected }) {
                   updateCondition(index, "field", e.target.value)
                 }
               >
-                <option value="">Select field</option>
+                <option value="">Status</option>
                 {expressionOptions.map((option, i) => (
                   <option key={i} value={option}>
                     {option}
@@ -94,7 +94,8 @@ function DecisionNode({ data, selected }) {
                   updateCondition(index, "operator", e.target.value)
                 }
               >
-                <option value="">Select operator</option>
+                <option
+                  value="">Operator</option>
                 {conditionOptions.map((option, i) => (
                   <option key={i} value={option}>
                     {option}
@@ -103,7 +104,7 @@ function DecisionNode({ data, selected }) {
               </select>
               <input
                 type="text"
-                className="bg-gray-700 rounded px-2 py-1 text-sm "
+                className="bg-gray-700 rounded px-2 py-1 text-sm w-20"
                 placeholder="Value"
                 value={condition.value}
                 onChange={(e) =>
@@ -155,7 +156,7 @@ function DecisionNode({ data, selected }) {
       <div className="absolute bottom-3 left-1/2 transform translate-y-full -translate-x-1/2 flex items-center">
         <Handle
           type="source"
-          id = "no"
+          id="no"
           position={Position.Bottom}
           className="w-3 h-3 rounded-full bg-gray-700 border border-gray-500"
         />

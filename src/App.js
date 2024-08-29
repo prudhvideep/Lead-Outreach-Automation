@@ -147,7 +147,7 @@ const App = () => {
         return [
           {
             name: "Payment Reminder",
-            body: `Dear {name},\n\nWe wish to remind you that there is a pending amount of {amount} in your loan account {loan_num}. Please make the payment using the following link: {link}.\n\nThank you.`,
+            body: `Hi {name}, Please Find The Payment Link For The Loan {loan_num}, With CLU: {link}. Please Click On The Link To Pay. -CLUCLOUD`,
           },
           {
             name: "Payment Link Follow-up",
@@ -337,6 +337,7 @@ const App = () => {
           nodeActionType: "control",
           position: newPosition,
           data: {
+            id : newNodeId,
             name: `${getNodeName(newNodeType)}`,
             label: `${newNodeType}`,
             status: "",
@@ -395,6 +396,16 @@ const App = () => {
     },
     [reactFlowInstance, setNodes, setEdges]
   );
+
+  const handleDeleteNode = (id) => {
+    console.log("handle delete node")
+    console.log("node id -----> ",id);
+    setNodes((nds) => {
+      const filteredNodes = nds.filter((node) => node.id !== id );
+
+      return filteredNodes;
+    })
+  }
 
   const handleExpressionChange = useCallback(
     (expressions) => {
@@ -459,12 +470,15 @@ const App = () => {
         y: event.clientY,
       });
 
+      const newNodeId = getId();
+
       const newNode = {
-        id: getId(),
+        id: newNodeId,
         type: `${type}`,
         nodeActionType: `${nodeActionType}`,
         position,
         data: {
+          id: newNodeId,
           name: `${getNodeName(type)}`,
           label: `${type}`,
           status: "",
@@ -476,6 +490,7 @@ const App = () => {
           expressions: {},
           templates: getNodeTemplates(type),
           onStatusChange: handleStatusChange,
+          onDeleteNode : handleDeleteNode,
           onExpressionChange: handleExpressionChange,
           position: position,
         },

@@ -160,11 +160,17 @@ const DeployFlow = ({
       if (!data.variables && !data.expressions) return "";
       
       let extensions = "<extensionElements>";
+      if(data?.selectedNodeTemplate){
+        const key = data.id + "$" + 'body';
+        const value = data?.selectedNodeTemplate?.body;
+         extensions += `
+             <flowable:formProperty id="${key}" name="${value}" type="string" required="true"/>`;
+      }
       if (data.variables) {
         Object.entries(data.variables).forEach(([key, value]) => {
           extensions += `
             <flowable:formProperty id="${key}" name="${value}" type="string" required="true"/>`;
-        });
+        });        
         if (nodeType === "serviceTask") {
           extensions += `
             <flowable:executionListener event="start" class="com.flowable.listeners.ServiceTaskPropertiesListener"/>`;
