@@ -53,6 +53,7 @@ function DecisionNode({ data, selected }) {
 
   const conditionOptions = ["==", "!="];
   const expressionOptions = [
+    "smsStatus",
     "messageStatus",
     "callStatus",
     "emailStatus",

@@ -9,7 +9,7 @@ import {
   FaPhoneAlt,
 } from "react-icons/fa";
 import { IoCloseSharp } from "react-icons/io5";
-import { MdDeleteOutline } from "react-icons/md";
+import { MdDeleteOutline, MdDelete } from "react-icons/md";
 import { FiEdit } from "react-icons/fi";
 
 function CustomNode({ data, selected, id }) {
@@ -104,13 +104,12 @@ function CustomNode({ data, selected, id }) {
   };
 
   const handleDeleteNode = (event) => {
-    console.log("Inside handle delete -----> ")
-    event.preventDefault();
-    if(data.onDeleteNode){
+    event.stopPropagation();
+    if (data.onDeleteNode) {
       data.onDeleteNode(id);
     }
     setHideStatus(true);
-  }
+  };
 
   const handleCloseClick = (event) => {
     event.stopPropagation();
@@ -186,15 +185,15 @@ function CustomNode({ data, selected, id }) {
           <div className="flex flex-row space-x-6">
             <div
               onClick={handleCloseClick}
-              className="flex items-center justify-center rounded-full w-5 h-5 outline outline-offset-1 hover:outline-blue-700 outline-gray-300 hover:cursor-pointer"
+              className="flex items-center justify-center rounded-full w-5 h-5 outline outline-offset-1 hover:outline-blue-700 bg-transparent outline-gray-300 hover:cursor-pointer"
             >
               <IoCloseSharp className="text-gray-300 hover:text-blue-700 font-bold text-lg" />
             </div>
             <div
               onClick={handleDeleteNode}
-              className="flex items-center justify-center rounded-full w-5 h-5 outline outline-offset-1 hover:outline-blue-700 outline-gray-300 hover:cursor-pointer"
+              className="flex items-center justify-center rounded-full w-5 h-5 outline outline-offset-1 hover:outline-blue-700 bg-transparent outline-gray-300 hover:cursor-pointer"
             >
-              <MdDeleteOutline className="text-gray-300 hover:text-blue-700 font-bold text-lg" />
+              <MdDelete className="text-gray-300 hover:text-blue-700 font-bold text-lg" />
             </div>
           </div>
         </div>

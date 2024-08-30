@@ -29,11 +29,15 @@ const ExecuteFlow = ({
           }
         );
 
+        const responseObj = await response.json();
+
+        
         if (!response.ok) {
-          alert("Error Starting the Process");
+          setStarting(false);
+          alert(`Error Starting the Process ${responseObj?.errorMessage}`);
+          return;
         }
 
-        const responseObj = await response.json();
 
         console.log("Response ----> ", responseObj);
 

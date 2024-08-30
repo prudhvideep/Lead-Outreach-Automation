@@ -299,6 +299,7 @@ const App = () => {
   const getExpressionOptions = (nodeType) => {
     switch (nodeType) {
       case "sms":
+        return "smsStatus";
       case "whatsapp":
         return "messageStatus";
       case "email":
