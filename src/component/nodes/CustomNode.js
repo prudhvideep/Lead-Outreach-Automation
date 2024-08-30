@@ -45,9 +45,9 @@ function CustomNode({ data, selected, id }) {
   const getStatusOptions = (nodeType) => {
     switch (nodeType) {
       case "sms":
-        return ["Delivered", "Failed"];
+        return ["SUCCESS", "FAIL"];
       case "whatsapp":
-        return ["Delivered", "Read", "Failed"];
+        return ["delivered", "read", "sent"];
       case "email":
         return ["Sent", "Failed"];
       case "botCall":

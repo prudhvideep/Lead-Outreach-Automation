@@ -112,7 +112,7 @@ const DeployFlow = ({
           }"/>
           <${nodeType} id="${node.id}" name="${
             node.data.label
-          }" flowable:class="${nodeMethod}" flowable:async="false" flowable:triggerable="true">
+          }" flowable:class="${nodeMethod}" flowable:async="true" flowable:triggerable="true">
              ${generateFieldExtensions(node.data, nodeType)}
             <incoming>flow_${flowCounter - 1}</incoming>
             <outgoing>flow_${flowCounter}</outgoing>
