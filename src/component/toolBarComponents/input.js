@@ -11,6 +11,7 @@ const Input = ({flowName,setFlowName}) => {
         id="flowName"
         name="flowName"
         type="text"
+        value={flowName}
         placeholder="Flow Name"
         disabled={!editable}
         onChange={(event) => {setFlowName(event.target.value)}}

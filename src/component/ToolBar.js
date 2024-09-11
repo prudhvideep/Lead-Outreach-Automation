@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Input from "./toolBarComponents/input";
 import Actions from "./toolBarComponents/actions";
 
-const ToolBar = ({ nodes, edges, completedTasks, setCompletedTasks }) => {
+const ToolBar = ({ nodes, setNodes, edges, setEdges, completedTasks, setCompletedTasks,reactFlowInstance }) => {
   const [flowName, setFlowName] = useState("");
   const [processDefinitionKey, setProcessDefinitionKey] = useState(null);
   const [processInstanceId, setProcessInstanceId] = useState(null);
@@ -16,7 +16,11 @@ const ToolBar = ({ nodes, edges, completedTasks, setCompletedTasks }) => {
         <Input flowName={flowName} setFlowName={setFlowName} />
         <Actions
           nodes={nodes}
+          setNodes={setNodes}
           edges={edges}
+          setEdges={setEdges}
+          flowName={flowName}
+          setFlowName={setFlowName}
           processDefinitionKey={processDefinitionKey}
           setProcessDefinitionKey={setProcessDefinitionKey}
           processInstanceId={processInstanceId}
@@ -29,6 +33,7 @@ const ToolBar = ({ nodes, edges, completedTasks, setCompletedTasks }) => {
           setFetching={setFetching}
           completedTasks={completedTasks}
           setCompletedTasks={setCompletedTasks}
+          reactFlowInstance={reactFlowInstance}
         />
       </div>
     </>

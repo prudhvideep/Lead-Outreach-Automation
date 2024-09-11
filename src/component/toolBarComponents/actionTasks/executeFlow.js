@@ -78,7 +78,7 @@ const ExecuteFlow = ({
         </button>
       ) : (
         <button className="p-1 pl-2 pr-2 bg-blue-500 rounded-md text-white text-sm font-medium">
-          Execute
+          Run
         </button>
       )}
     </div>

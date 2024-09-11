@@ -24,8 +24,6 @@ import EndNode from "./component/nodes/EndNode.js";
 import WaitNode from "./component/nodes/WaitNode.js";
 import ToolBar from "./component/ToolBar.js";
 import DecisionNode from "./component/nodes/DecisionNode.js";
-import { GiConsoleController } from "react-icons/gi";
-import { SiWritedotas } from "react-icons/si";
 
 // Key for local storage
 //const flowKey = "flow-key";
@@ -345,7 +343,6 @@ const App = () => {
             nodeType: newNodeType,
             info: "",
             infoVar: "",
-            decisionNode: {},
             variables: {},
             selectedTemplate : {},
             templates: getNodeTemplates(newNodeType),
@@ -570,9 +567,12 @@ const App = () => {
           <Panel>
             <ToolBar
               nodes={nodes}
+              setNodes={setNodes}
               edges={edges}
+              setEdges={setEdges}
               completedTasks={completedTasks}
               setCompletedTasks={setCompletedTasks}
+              reactFlowInstance={reactFlowInstance}
             />
           </Panel>
         </ReactFlow>

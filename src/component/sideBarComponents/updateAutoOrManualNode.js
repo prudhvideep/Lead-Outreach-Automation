@@ -4,6 +4,8 @@ import { HiVariable } from "react-icons/hi2";
 import { TbMathFunction } from "react-icons/tb";
 import { FiClock } from "react-icons/fi";
 
+let templateCache = {};
+
 export default function UpdateNode({
   selectedNode,
   setNodeInfo,
@@ -14,20 +16,206 @@ export default function UpdateNode({
   setNodes,
   setSelectedElements,
   handleDelete,
-  nodeTemplates,
+  // nodeTemplates,
   selectedNodeTemplate,
   setSelectedNodeTemplate,
 }) {
+  const [page, setPage] = useState(0);
   const [addVariable, setAddVariable] = useState(false);
   const [editVariable, setEditVariable] = useState(false);
   const [variable, setVariable] = useState({ name: "", value: "" });
   const [waitTime, setWaitTime] = useState(
     nodeVariables[`${selectedNode.id}$waitTime`] || ""
   );
+  const [nodeTemplates, setNodeTemplates] = useState(
+    selectedNodeTemplate && selectedNodeTemplate.name
+      ? [selectedNodeTemplate]
+      : [{ name: "", body: "" }]
+  );
+
+  useEffect(() => {
+    console.log("Node type ----> ",selectedNode.type)
+    switch (selectedNode.type) {
+      case "sms":
+        fetchSmsTemplates();
+        break;
+      case "email":
+        fetchEmailTemplates();
+        break;
+      case "botCall":
+        fetchBotCallTemplates();
+        break;
+      case "whatsapp":
+        fetchWhatsAppTemplates();
+        break;
+      default:
+        break;
+    }
+  }, []);
 
   useEffect(() => {
     setWaitTime(nodeVariables[`${selectedNode.id}$waitTime`] || "");
   }, [selectedNode, nodeVariables]);
+
+  const fetchBotCallTemplates = async () => {
+    const cacheKey = `${selectedNode.type}-${page}`;
+
+    if (templateCache[cacheKey]) {
+      setNodeTemplates(templateCache[cacheKey]);
+      return;
+    }
+
+    const response = await fetch(
+      `${process.env.REACT_APP_BOT_CALL_TEMPLATE_URL}?page=${page}&size=10`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          organizationId: "35ac86c5-d55c-4746-b07a-37dd0dad94",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      alert("Error fetching the data");
+      return;
+    }
+
+    const responseObj = await response.json();
+
+    let curNodeTemplate = responseObj?.content?.map((response) => ({
+      name: response?.templateName,
+      body: response?.content,
+    }));
+
+    console.log("current node tempalte -----> ", curNodeTemplate);
+    templateCache[cacheKey] = curNodeTemplate;
+
+    setNodeTemplates(curNodeTemplate ?? [{ name: "", body: "" }]);
+    console.log("Response object", responseObj);
+  };
+
+  const fetchEmailTemplates = async () => {
+    const cacheKey = `${selectedNode.type}-${page}`;
+
+    if (templateCache[cacheKey]) {
+      setNodeTemplates(templateCache[cacheKey]);
+      return;
+    }
+
+    const response = await fetch(
+      `${process.env.REACT_APP_EMAIL_TEMPLATE_URL}?page=${page}&size=10`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          organizationId: "35ac86c5-d55c-4746-b07a-37dd0dad94",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      alert("Error fetching the data");
+      return;
+    }
+
+    const responseObj = await response.json();
+
+    let curNodeTemplate = responseObj?.content?.map((response) => ({
+      name: response?.templateName,
+      body: response?.content,
+    }));
+
+    console.log("current node tempalte -----> ", curNodeTemplate);
+    templateCache[cacheKey] = curNodeTemplate;
+
+    setNodeTemplates(curNodeTemplate ?? [{ name: "", body: "" }]);
+    console.log("Response object", responseObj);
+  };
+
+  const fetchSmsTemplates = async () => {
+    const cacheKey = `${selectedNode.type}-${page}`;
+
+    if (templateCache[cacheKey]) {
+      setNodeTemplates(templateCache[cacheKey]);
+      return;
+    }
+
+    const response = await fetch(
+      `${process.env.REACT_APP_SMS_TEMPLATE_URL}?page=${page}&size=10`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          organizationId: "35ac86c5-d55c-4746-b07a-37dd0dad94",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      alert("Error fetching sms templates");
+      return;
+    }
+
+    const responseObj = await response.json();
+
+    let curNodeTemplate = responseObj?.content?.map((response) => ({
+      name: response?.templateName,
+      body: response?.content,
+    }));
+
+    console.log("current node tempalte -----> ", curNodeTemplate);
+    templateCache[cacheKey] = curNodeTemplate;
+
+    setNodeTemplates(curNodeTemplate ?? [{ name: "", body: "" }]);
+    console.log("Response object", responseObj);
+  };
+
+  const fetchWhatsAppTemplates = async () => {
+    const cacheKey = `${selectedNode.type}-${page}`;
+
+    if (templateCache[cacheKey]) {
+      setNodeTemplates(templateCache[cacheKey]);
+      return;
+    }
+
+    const response = await fetch(
+      `${process.env.REACT_APP_WHATSAPP_TEMPLATE_URL}?page=${page}&size=10`,
+      {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          organizationId: "35ac86c5-d55c-4746-b07a-37dd0dad94",
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      alert("Error fetching the whatsapp templates.");
+      return;
+    }
+
+    const responseObj = await response.json();
+
+    let curNodeTemplate = responseObj?.content?.map((response) => ({
+      name: response?.templateName,
+      body: response?.content,
+    }));
+
+    console.log("current node tempalte -----> ", curNodeTemplate);
+    templateCache[cacheKey] = curNodeTemplate;
+
+    setNodeTemplates(curNodeTemplate ?? [{ name: "", body: "" }]);
+    console.log("Response object", responseObj);
+  };
 
   const handleTemplateSelect = (template) => {
     setSelectedNodeTemplate(template);
@@ -160,7 +348,9 @@ export default function UpdateNode({
         <select
           className="block w-full pt-2 px-3 pb-3 text-sm text-gray-300 border border-gray-700 rounded-lg bg-customgray focus:border-transparent transition-all duration-200"
           onChange={(e) => handleTemplateSelect(JSON.parse(e.target.value))}
-          value={selectedNodeTemplate ? JSON.stringify(selectedNodeTemplate) : ""}
+          value={
+            selectedNodeTemplate ? JSON.stringify(selectedNodeTemplate) : ""
+          }
         >
           <option value="">Select a template</option>
           {nodeTemplates.map((template, index) => (

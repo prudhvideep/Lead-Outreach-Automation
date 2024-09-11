@@ -10,10 +10,17 @@ import {
   FaAngleDoubleLeft,
   FaAngleDoubleRight,
 } from "react-icons/fa";
+import { BsFloppy } from "react-icons/bs";
+import { IoFolderOutline } from "react-icons/io5";
+import FlowModal from "./actionComponents/flowModal";
 
 const Actions = ({
   nodes,
+  setNodes,
   edges,
+  setEdges,
+  flowName,
+  setFlowName,
   processDefinitionKey,
   setProcessDefinitionKey,
   processInstanceId,
@@ -26,11 +33,26 @@ const Actions = ({
   setFetching,
   completedTasks,
   setCompletedTasks,
+  reactFlowInstance,
 }) => {
   const [zoomLevel, setZoomLevel] = useState();
   const [collapse, setCollapse] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
   const currentZoom = useStore((state) => state.transform[2]);
+
+  const handleSave = () => {
+    if (!flowName || flowName === "") {
+      alert("Flowname cannot be null");
+      return;
+    }
+
+    if (reactFlowInstance) {
+      const flow = reactFlowInstance.toObject();
+      localStorage.setItem(flowName, JSON.stringify(flow));
+      alert("Saved successful!");
+    }
+  };
 
   useEffect(() => {
     setZoomLevel(Math.round(currentZoom * 100));
@@ -39,6 +61,24 @@ const Actions = ({
   return (
     <div className="absolute inset-y-1 left-[220px]">
       <div className="transition-all duration-300 ease-in-out flex flex-row space-x-2 items-center justify-center">
+        {!collapse && (
+          <button
+            title="Open Flow"
+            className="bg-customgray rounded-md p-1 outline outline-gray-700 hover:bg-highlightedgray"
+            onClick={() => setShowModal(true)}
+          >
+            <IoFolderOutline className="text-white text-md font-extralight" />
+          </button>
+        )}
+        {!collapse && (
+          <button
+            title="Save Flow"
+            className="bg-customgray rounded-md p-1 outline outline-gray-700 hover:bg-highlightedgray"
+            onClick={handleSave}
+          >
+            <BsFloppy className="text-white text-md font-extralight" />
+          </button>
+        )}
         {!collapse && (
           <button
             title="Full Screen"
@@ -113,6 +153,14 @@ const Actions = ({
           />
         )}
       </div>
+      {showModal && 
+        <FlowModal 
+          setNodes={setNodes}
+          setEdges={setEdges}
+          setShowModal={setShowModal} 
+          setFlowName={setFlowName}
+          reactFlowInstance={reactFlowInstance}
+        />}
     </div>
   );
 };
