@@ -314,10 +314,10 @@ const App = () => {
 
   const handleStatusChange = useCallback(
     (nodeId, status, position, nodeType) => {
-      console.log("Node id ---->", nodeId);
-      console.log("status ---> ", status);
-      console.log("Position ----> ", position);
-      console.log("Node Type ----> ", nodeType);
+      // console.log("Node id ---->", nodeId);
+      // console.log("status ---> ", status);
+      // console.log("Position ----> ", position);
+      // console.log("Node Type ----> ", nodeType);
 
       if (reactFlowInstance) {
         const offsetX = 200;
